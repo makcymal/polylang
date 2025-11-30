@@ -1,0 +1,36 @@
+app:
+  version: '@project.version@'
+
+server:
+  port: 3232
+
+spring:
+  application:
+    name: polylang
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/polylang
+    username: postgres
+    password: postgres
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        show-sql: true
+        format-sql: true
+        hbm2ddl:
+          auto: validate
+  liquibase:
+    enabled: true
+    liquibase-schema: public
+    database-change-log-table: changelog
+    database-change-log-lock-table: changelog_lock
+    change-log: classpath:/db/changelog.yaml
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+
