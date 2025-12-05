@@ -12,6 +12,5 @@ public class UsersService {
 
     private final UsersRepository repo;
 
-    public User
 
 }
