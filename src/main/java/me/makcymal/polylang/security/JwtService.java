@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -81,7 +80,6 @@ public class JwtService {
     }
 
     public String issueRefresh(String jti, String accessJti, String email) {
-        UUID uuid = UUID.randomUUID().;
         ZonedDateTime now = ZonedDateTime.now();
         String jwt = JWT.create()
                 .withJWTId(jti)

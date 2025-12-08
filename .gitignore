@@ -1,17 +1,17 @@
+### Java ###
 HELP.md
-target/
+target
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+!**/src/main/**/target
+!**/src/test/**/target
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+### Python ###
+.venv
+
+### React ###
+node_modules
+.yarn
+.pnp.*
 
 ### IntelliJ IDEA ###
 .idea
@@ -19,15 +19,10 @@ target/
 *.iml
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
 ### VS Code ###
-.vscode/
+.vscode
+
+### etc ###
+.DS_Store
+*.log
+logs
