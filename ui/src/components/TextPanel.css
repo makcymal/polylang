@@ -1,0 +1,45 @@
+.panel {
+    flex: 1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 20px;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.panel-title {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    letter-spacing: 0.2px;
+}
+
+.panel-text {
+    flex: 1;
+    line-height: 1.5;
+    font-family: inherit;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+    resize: none;
+    border: none;
+    outline: none;
+    field-sizing: content;
+    overflow: hidden;
+}
+
+.panel-text:active {
+    border: none;
+    outline: none;
+}
+
+.panel-hint {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    letter-spacing: 0.2px;
+    text-align: center;
+    transform: translateY(10px);
+}

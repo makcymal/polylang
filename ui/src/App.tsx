@@ -1,49 +1,34 @@
-import './App.css'
-
-const steps = [
-    'Вам будет предложен текст на русском языке',
-    'Начните переводить его вслух',
-    'ИИ проанализирует ваш перевод и даст подсказки для улучшения',
-]
+import {useState, useEffect} from 'react'
+import {type Theme, THEME, DATA_THEME, LIGHT, DARK} from '@/types/Theme.ts'
+import '@/App.css'
+import Gym from '@/widgets/Gym.tsx'
+import Header from "@/widgets/Header.tsx";
+import Footer from "@/widgets/Footer.tsx";
 
 function App() {
+
+    const [theme, setTheme] = useState<Theme>(() => {
+        const saved = localStorage.getItem(THEME)
+        return (saved === DARK ? DARK : LIGHT) as Theme
+    })
+
+    useEffect(() => {
+        document.documentElement.setAttribute(DATA_THEME, theme)
+        localStorage.setItem(THEME, theme)
+    }, [theme])
+
+    const switchTheme = () => {
+        setTheme((prev) => (prev === LIGHT ? DARK : LIGHT))
+    }
+
     return (
-        <div className="page">
-            <main className="content">
-                <header className="hero">
-                    <h1>Говорите и думайте на английском свободно</h1>
-                    <p className="lead">
-                    Живой тренажёр для беглой речи без скучных правил
-                    </p>
-                    <button className="cta" type="button">Начать</button>
-                </header>
-
-                <section className="section">
-                    <h2>Как это работает</h2>
-                    <div className="grid">
-                        {steps.map((step, index) => (
-                            <div key={step} className="card">
-                                <div className="step-number">{index + 1}</div>
-                                <p>{step}</p>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            </main>
-
-            <footer className="footer">
-                <div className="signature">
-                    polylang by makcymal ·{' '}
-                    <a href="https://github.com/makcymal/polylang" target="_blank" rel="noreferrer">
-                        GitHub
-                    </a>
-                </div>
-                <div>
-                    <a href="mailto:makcymal@yandex.ru" className="email">makcymal@yandex.ru</a>
-                </div>
-            </footer>
+        <div className="app">
+            <Header theme={theme} switchTheme={switchTheme}/>
+            <Gym theme={theme}/>
+            <Footer/>
         </div>
     )
+
 }
 
 export default App

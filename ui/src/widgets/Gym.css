@@ -1,0 +1,97 @@
+.translation-controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.translation-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 3.7rem;
+    gap: 1rem;
+}
+
+.explore-texts-icon {
+    height: 170%;
+}
+
+.toggle-recording-icon {
+    height: 110%;
+}
+
+.recording-timer {
+    font-size: 1em;
+    color: var(--text-primary);
+}
+
+.translation-contents {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 1rem auto;
+}
+
+.text-to-translate-wr {
+    display: flex;
+    flex-direction: column;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.analysis {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.analysis-controls {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.analyze-btn {
+    min-width: 180px;
+    margin: 0 auto;
+}
+
+.analysis-notes {
+    width: 100%;
+    min-height: 200px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    color: var(--text-primary);
+    padding: 20px;
+    font-size: 17px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.record-btn {
+    min-width: 200px;
+    padding: 14px 28px;
+}
+
+.record-btn.recording {
+    border-color: #ef4444;
+    color: #ef4444;
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.25);
+    background: #fff0f0;
+}
+
+[data-theme='dark'] .record-btn.recording {
+    background: #3e2a2a;
+    border-color: #f92672;
+    color: #f92672;
+    box-shadow: 0 10px 30px rgba(249, 38, 114, 0.3);
+}
