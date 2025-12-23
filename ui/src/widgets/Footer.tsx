@@ -1,4 +1,4 @@
-import "./Footer.css"
+import '@/widgets/Footer.css';
 
 function Footer() {
     return (
@@ -10,10 +10,12 @@ function Footer() {
                 </a>
             </div>
             <div>
-                <a href="mailto:makcymal@yandex.ru" className="footer-email">makcymal@yandex.ru</a>
+                <a href="mailto:makcymal@yandex.ru" className="footer-email">
+                    makcymal@yandex.ru
+                </a>
             </div>
         </footer>
-    )
+    );
 }
 
 export default Footer;

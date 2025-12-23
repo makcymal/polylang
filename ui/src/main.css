@@ -1,5 +1,10 @@
 :root {
-    font-family: 'Inter', 'SF Pro Text', system-ui, -apple-system, sans-serif;
+    font-family:
+        'Inter',
+        'SF Pro Text',
+        system-ui,
+        -apple-system,
+        sans-serif;
     line-height: 1.6;
     font-weight: 400;
     font-synthesis: none;
@@ -17,7 +22,9 @@ body {
     min-width: 320px;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 a {

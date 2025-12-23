@@ -1,4 +1,4 @@
-import "./Button.css"
+import '@/components/Button.css';
 
 const Button = () => {
     return (
@@ -40,9 +40,11 @@ const Button = () => {
                 </ul>
             </div>
 
-            <p className="footer-note">Note: Using Font Awesome icons to simulate compass.png and microphone.png images</p>
+            <p className="footer-note">
+                Note: Using Font Awesome icons to simulate compass.png and microphone.png images
+            </p>
         </div>
-    )
-}
+    );
+};
 
-export default Button
+export default Button;

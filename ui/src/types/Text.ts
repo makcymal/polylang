@@ -1,4 +1,4 @@
-import {type Language, type LanguageLevel} from '@/types/Language'
+import { type Language, type LanguageLevel } from '@/types/Language';
 
 export interface Text {
     id: number;

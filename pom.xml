@@ -10,7 +10,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>me.makcymal</groupId>
+    <groupId>tech.makcymal</groupId>
     <artifactId>polylang</artifactId>
     <version>0.1.0</version>
 
