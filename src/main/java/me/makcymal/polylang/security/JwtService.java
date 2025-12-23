@@ -6,14 +6,17 @@ import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.makcymal.polylang.entities.RefreshToken;
 import me.makcymal.polylang.exceptions.auth.BadTokenException;
 import me.makcymal.polylang.exceptions.auth.ExpiredTokenException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -69,25 +72,31 @@ public class JwtService {
         return auth;
     }
 
-    public String issueAccess(String jti, String email) {
-        ZonedDateTime now = ZonedDateTime.now();
-        String jwt = JWT.create()
-                .withJWTId(jti)
-                .withSubject(email)
-                .withExpiresAt(now.plusSeconds(props.getAccessTokenValiditySeconds()).toInstant())
-                .sign(algoCtx.getAlgorithm());
-        return jwt;
-    }
+    // public String issueAccess(String email) {
+    //     ZonedDateTime now = ZonedDateTime.now();
+    //     String jwt = JWT.create()
+    //             .withJWTId(jti)
+    //             .withSubject(email)
+    //             .withExpiresAt(now.plusSeconds(props.getAccessTokenValiditySeconds()).toInstant())
+    //             .sign(algoCtx.getAlgorithm());
+    //     return jwt;
+    // }
 
-    public String issueRefresh(String jti, String accessJti, String email) {
-        ZonedDateTime now = ZonedDateTime.now();
-        String jwt = JWT.create()
-                .withJWTId(jti)
-                .withClaim("access_jti", accessJti)
-                .withSubject(email)
-                .withExpiresAt(now.plusDays(props.getRefreshTokenValidityDays()).toInstant())
-                .sign(algoCtx.getAlgorithm());
-        return jwt;
-    }
+    // public Pair<RefreshToken, String> issueRefresh(String email) {
+    //     ZonedDateTime now = ZonedDateTime.now();
+    //
+    //     RefreshToken entity = RefreshToken.builder()
+    //             .jti(UUID.randomUUID())
+    //             .accessJti()
+    //             .build()
+    //
+    //     String jwt = JWT.create()
+    //             .withJWTId(jti)
+    //             .withClaim("access_jti", accessJti)
+    //             .withSubject(email)
+    //             .withExpiresAt(now.plusDays(props.getRefreshTokenValidityDays()).toInstant())
+    //             .sign(algoCtx.getAlgorithm());
+    //     return jwt;
+    // }
 
 }

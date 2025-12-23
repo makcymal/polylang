@@ -7,10 +7,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import me.makcymal.polylang.enums.Language;
 import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Data
@@ -38,6 +41,13 @@ public class User extends AbstractEntity {
     )
     private Language nativeLanguage;
 
+    @CreationTimestamp
+    private ZonedDateTime createdAt;
 
+    private ZonedDateTime updatedAt;
+
+    private ZonedDateTime lastAuthenticationAt;
+
+    private ZonedDateTime lastPasswordResetAt;
 
 }

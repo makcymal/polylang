@@ -5,6 +5,8 @@ server:
   port: 3232
 
 spring:
+  main:
+    banner-mode: off
   application:
     name: polylang
   datasource:

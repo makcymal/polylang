@@ -24,7 +24,7 @@ public class SecurityConfig {
         "/**"
     };
 
-    private final ExceptionalEntryPoint jwtAuthEntryPoint;
+    private final ExceptionalEntryPoint exceptionalEntryPoint;
 
     private final JwtAuthFilter jwtAuthFilter;
 
@@ -33,7 +33,7 @@ public class SecurityConfig {
         return httpSecurity.cors(customizer -> {})
             .csrf(AbstractHttpConfigurer::disable)
             .exceptionHandling(c -> c
-                .authenticationEntryPoint(jwtAuthEntryPoint))
+                .authenticationEntryPoint(exceptionalEntryPoint))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(c -> c
                 .requestMatchers(allowedUrls).permitAll()
