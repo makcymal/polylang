@@ -1,0 +1,37 @@
+services:
+  polylang_db:
+    container_name: 'polylang_db'
+    image: 'dhi.io/postgres:18-alpine3.22'
+    env_file:
+      - .env
+    command: -p 5454
+    ports:
+      - '127.0.0.1:5454:5454'
+    volumes:
+      - polylang_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p 5454"]
+      start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  polylang:
+    container_name: 'polylang'
+    build:
+      context: .
+      dockerfile: Dockerfile-polylang
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://polylang_db:5454
+    depends_on:
+      polylang_db:
+        condition: service_healthy
+    ports:
+      - '3232:3232'
+
+volumes:
+  polylang_db:
+    driver: local

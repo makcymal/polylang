@@ -1,0 +1,15 @@
+FROM dhi.io/python:3-debian13-dev
+
+WORKDIR /app
+
+COPY sample.wav ./sample.wav
+
+RUN apt update && apt install ffmpeg -y \
+    && python3.14 -m venv whisper-venv \
+    && source whisper-venv/bin/activate \
+    && pip install openai-whisper
+
+RUN source whisper-venv/bin/activate \
+    && whisper --model_dir whisper-models --model tiny.en sample.wav \
+    && whisper --model_dir whisper-models --model base.en sample.wav \
+    && whisper --model_dir whisper-models --model small.en sample.wav

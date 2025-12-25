@@ -22,6 +22,9 @@ node_modules
 ### VS Code ###
 .vscode
 
+### Environment variables!!! ###
+.env
+
 ### etc ###
 .DS_Store
 *.log

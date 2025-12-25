@@ -2,7 +2,7 @@ app:
   version: '@project.version@'
 
 server:
-  port: 3232
+  port: ${SERVER_PORT}
 
 spring:
   main:
@@ -11,14 +11,14 @@ spring:
     name: polylang
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/polylang
-    username: postgres
-    password: postgres
+    url: ${POSTGRES_URL}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
-        show-sql: true
+        show-sql: ${JPA_SHOW_SQL}
         format-sql: true
         hbm2ddl:
           auto: validate
@@ -31,9 +31,9 @@ spring:
 
 springdoc:
   api-docs:
-    enabled: true
+    enabled: ${SWAGGER_ENABLED}
   swagger-ui:
-    enabled: true
+    enabled: ${SWAGGER_ENABLED}
 
 jwt:
   public-key: ${PUBLIC_KEY}
