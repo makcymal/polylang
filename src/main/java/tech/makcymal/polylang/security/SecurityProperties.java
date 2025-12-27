@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Duration;
 
 @Data
 @Component
@@ -19,12 +20,10 @@ public class SecurityProperties {
     @NotBlank
     private String publicKey;
 
-    @Min(0)
     @NotNull
-    private Integer accessTokenValiditySeconds;
+    private Duration accessTokenValidity;
 
-    @Min(0)
     @NotNull
-    private Integer refreshTokenValidityDays;
+    private Duration refreshTokenValidity;
 
 }

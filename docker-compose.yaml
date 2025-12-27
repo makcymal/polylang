@@ -19,6 +19,7 @@ services:
 
   polylang:
     container_name: 'polylang'
+    image: 'polylang:jdk25-py3.14-deb13'
     build:
       context: .
       dockerfile: Dockerfile-polylang

@@ -38,5 +38,13 @@ springdoc:
 jwt:
   public-key: ${PUBLIC_KEY}
   private-key: ${REFRESH_KEY}
-  access-token-validity-seconds: ${ACCESS_TOKEN_VALIDITY_SECONDS}
-  refresh-token-validity-days: ${REFRESH_TOKEN_VALIDITY_DAYS}
+  access-token-validity: ${ACCESS_TOKEN_VALIDITY}
+  refresh-token-validity: ${REFRESH_TOKEN_VALIDITY}
+
+speaking:
+  speech-records-dir: ${SPEECH_RECORDS_DIR}
+  speech-transcriptions-dir: ${SPEECH_TRANSCRIPTIONS_DIR}
+  transcribe-by-snippets-of-duration: ${TRANSCRIBE_BY_SNIPPETS_OF_DURATION}
+  whisper-path: ${WHISPER_PATH}
+  whisper-model: ${WHISPER_MODEL}
+  whisper-models-dir: ${WHISPER_MODELS_DIR}

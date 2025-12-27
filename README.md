@@ -30,7 +30,7 @@ audio [audio ...]
 ```bash
 whisper -o stt/transciption -f json --verbose False --language en --fp16 False \
         --word_timestamps True --clip_timestamps 0,10 \
-        --model-dir whisper-models --model small.en stt/speech/sample.wav
+        --model_dir whisper-models --model small.en stt/speech/sample.wav
 ```
 
 ### Images:
