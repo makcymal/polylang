@@ -1,16 +1,26 @@
 package tech.makcymal.polylang.speaking.transcribe;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import tech.makcymal.polylang.common.NamingThreadFactory;
+import tech.makcymal.polylang.common.SystemUtils;
 import tech.makcymal.polylang.speaking.SpeakingProperties;
+import tech.makcymal.polylang.speaking.transcribe.models.Request;
+import tech.makcymal.polylang.speaking.transcribe.models.Response;
+import tech.makcymal.polylang.speaking.transcribe.models.Result;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -18,20 +28,21 @@ import java.util.Optional;
 public class WhisperService {
 
     private final SpeakingProperties speakingProps;
-
-    private final TranscriptionRequests nonEndingSnippetRequests = new TranscriptionRequests();
-    private final TranscriptionRequests endingSnippetRequests = new TranscriptionRequests();
-    private final TranscriptionResponses responses = new TranscriptionResponses();
+    private final RequestSet requests;
+    private final ResultSet results;
 
     private List<String> rawCmd;
     private int snippetDuration;
+    private ExecutorService executor;
 
     @PostConstruct
     public void init() {
+        log.info("Running WhisperService.init...");
+
         rawCmd = List.of(
                 speakingProps.getWhisperPath(),
                 "--model_dir", speakingProps.getWhisperModelsDir(),
-                "--model", speakingProps.getWhisperModel().getValue(),
+                "--model", speakingProps.getWhisperModel().getName(),
                 "-o", speakingProps.getSpeechTranscriptionsDir(),
                 "-f", "json",
                 "--verbose", "False",
@@ -40,104 +51,104 @@ public class WhisperService {
                 "--word_timestamps", "True",
                 "--clip_timestamps"
         );
+
         snippetDuration = (int) speakingProps.getTranscribeBySnippetsOfDuration().getSeconds();
+
+        executor = Executors.newFixedThreadPool(
+                speakingProps.getWhisperThreadPoolSize(),
+                new NamingThreadFactory("whisper-")
+        );
+
+        log.info("Running WhisperService.init...DONE");
     }
 
-    public TranscriptionDiff transcribe(String filename, int snippetIdx, boolean isEnding) {
-        if (!isEnding) {
-            nonEndingSnippetRequests.put(snippetIdx, filename);
-        } else {
-            endingSnippetRequests.put(snippetIdx, filename);
-        }
+    public Result transcribe(@NonNull String recordFilePath, int snippetIdx) {
+        log.info("Running WhisperService.transcribe...");
 
-        List<WhisperResponse> fileResponses = responses.getWhenAdded(filename);
+        requests.put(recordFilePath, snippetIdx);
+        Result result = results.getWhenAdded(recordFilePath);
 
-        TranscriptionDiff diff = calculateDiff(snippetIdx > 0 ? fileResponses.get(snippetIdx - 1) : null, fileResponses.get(snippetIdx));
-        return diff;
-    }
+        log.info("Running WhisperService.transcribe...DONE");
 
-    private TranscriptionDiff calculateDiff(WhisperResponse prevResp, WhisperResponse currResp) {
-        Optional<WhisperResponse.Word> prevLastWord = Optional.ofNullable(prevResp)
-                .map(WhisperResponse::getSegments)
-                .map(List::getLast)
-                .map(WhisperResponse.Segment::getWords)
-                .map(List::getLast);
-
-        Optional<WhisperResponse.Word> currFirstWord = Optional.ofNullable(currResp)
-                .map(WhisperResponse::getSegments)
-                .map(List::getFirst)
-                .map(WhisperResponse.Segment::getWords)
-                .map(List::getFirst);
-
-        String text = Optional.ofNullable(currResp)
-                .map(WhisperResponse::getText)
-                .orElse("");
-        boolean prevLastWordRevised = false;
-
-        if (prevLastWord.isPresent() && currFirstWord.isPresent()) {
-            float prevLastEnd = prevLastWord.get().getEnd();
-            float prevLastProb = prevLastWord.get().getProbability();
-
-            float currFirstStart = currFirstWord.get().getStart();
-            float currFirstProb = currFirstWord.get().getProbability();
-
-            prevLastWordRevised = currFirstStart < prevLastEnd && currFirstProb > prevLastProb;
-        }
-
-        return new TranscriptionDiff(text, prevLastWordRevised);
+        return result;
     }
 
     @Scheduled(fixedRateString = "${speaking.transcribe-by-snippets-of-duration}")
     private void scheduleTranscription() {
-        log.info("Scheduled transcription");
+        log.info("Running WhisperService.scheduleTranscription...");
+
+        for (int snippetIdx = 0; snippetIdx < requests.size(); snippetIdx++) {
+            final int finalSnippetIdx = snippetIdx;
+            executor.submit(() -> executeWhisperAndReadResponses(finalSnippetIdx));
+        }
+
+        log.info("Running WhisperService.scheduleTranscription...DONE");
     }
 
-    private void runTranscription(int snippetIdx, boolean isEnding) {
-        Optional<List<String>> filenames = !isEnding
-                                              ? nonEndingSnippetRequests.getAll(snippetIdx)
-                                              : endingSnippetRequests.getAll(snippetIdx);
-        if (filenames.isEmpty()) {
+    private void executeWhisperAndReadResponses(int snippetIdx) {
+        log.info("Running WhisperService.executeWhisperAndReadResponses...");
+
+        Optional<List<Request>> requestList = requests.getAll(snippetIdx);
+
+        if (requestList.isEmpty()) {
             return;
         }
 
-        boolean executed = executeWhisper(snippetIdx, isEnding, filenames.get());
-        if (!executed) {
+        String start = String.format("%d", snippetDuration * snippetIdx);
+        List<String> recordFilePaths = requestList.get().stream()
+                .map(Request::getRecordFilePath)
+                .toList();
 
+        Optional<Throwable> executionError = Optional.empty();
+        try {
+            executeWhisper(start, recordFilePaths);
+        } catch (RuntimeException e) {
+            executionError = Optional.of(e);
         }
+
+        for (int i = 0; i < requestList.get().size(); i++) {
+            Request request = requestList.get().get(i);
+            String filename = request.getRecordFilePath();
+
+            Response response = null;
+            Optional<Throwable> readingError = Optional.empty();
+            try {
+                response = readWhisperResponse(filename);
+            } catch (RuntimeException e) {
+                readingError = Optional.of(e);
+            }
+
+            Result result = new Result(request, Optional.ofNullable(response), executionError, readingError);
+            results.add(filename, result);
+        }
+
+        log.info("Running WhisperService.executeWhisperAndReadResponses...DONE");
     }
 
-    private boolean executeWhisper(int snippetIdx, boolean isEnding, List<String> filenames) {
-        int start = snippetDuration * snippetIdx;
+    private void executeWhisper(@NonNull String clipTimestamps, @NonNull List<String> filenames) {
+        log.info("Running WhisperService.executeWhisper...");
 
-        if (!isEnding) {
-            return executeWhisperProcess(String.format("%d,%d", start, start + snippetDuration), filenames);
-        } else {
-            return executeWhisperProcess(String.format("%d", start), filenames);
-        }
-    }
-
-    private boolean executeWhisperProcess(String clipTimestamps, List<String> filenames) {
         List<String> cmd = new ArrayList<>(rawCmd);
         cmd.add(clipTimestamps);
         cmd.addAll(filenames);
+        SystemUtils.executeCommand(cmd);
 
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        try {
-            Process process = pb.start();
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                log.error("executing whisper - non-zero exit code: {}", exitCode);
-                return false;
-            }
-        } catch (IOException | InterruptedException e) {
-            log.error("executing whisper - error", e);
-        }
-
-        return true;
+        log.info("Running WhisperService.executeWhisper...DONE");
     }
 
-    public void cleanup(String filename) {
-        responses.cleanup(filename);
+    private Response readWhisperResponse(@NonNull String recordFilePath) {
+        log.info("Running WhisperService.readWhisperResponse...");
+
+        String fileNameWithoutExt = SystemUtils.getFileNameWithoutExtension(Paths.get(recordFilePath).getFileName().toString());
+        String transcriptionFilePath = speakingProps.getSpeechTranscriptionsDir() + fileNameWithoutExt + ".json";
+
+        log.info("Running WhisperService.readWhisperResponse...DONE");
+
+        return SystemUtils.readJsonFile(transcriptionFilePath, Response.class);
+    }
+
+    public void cleanup(@NonNull String filename) {
+        results.cleanup(filename);
     }
 
 }

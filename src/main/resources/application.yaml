@@ -48,3 +48,7 @@ speaking:
   whisper-path: ${WHISPER_PATH}
   whisper-model: ${WHISPER_MODEL}
   whisper-models-dir: ${WHISPER_MODELS_DIR}
+  whisper-thread-pool-size: ${WHISPER_THREAD_POOL_SIZE}
+  waiting-whisper-response-timeout: ${WAITING_WHISPER_RESPONSE_TIMEOUT}
+  detect-silence-by-no-speech-prob-threshold: ${DETECT_SILENCE_BY_NO_SPEECH_PROB_THRESHOLD}
+  silence-timeout-to-stop-recording: ${SILENCE_TIMEOUT_TO_STOP_RECORDING}

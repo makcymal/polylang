@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.common;
+package tech.makcymal.polylang.common.exceptions;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

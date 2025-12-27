@@ -30,3 +30,7 @@ speaking:
   whisper-path: /app/whisper-venv/bin/whisper
   whisper-model: SMALL_EN
   whisper-models-dir: /app/whisper-models
+  whisper-thread-pool-size: 4
+  waiting-whisper-response-timeout: PT1M
+  detect-silence-by-no-speech-prob-threshold: '0.8'
+  silence-timeout-to-stop-recording: PT10S

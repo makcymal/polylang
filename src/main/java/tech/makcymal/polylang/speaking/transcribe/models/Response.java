@@ -1,28 +1,25 @@
-package tech.makcymal.polylang.speaking.transcribe;
+package tech.makcymal.polylang.speaking.transcribe.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WhisperResponse {
+public class Response {
 
     private String text;
     private List<Segment> segments;
     private String language;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
+    @Getter
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Segment {
@@ -40,12 +37,10 @@ public class WhisperResponse {
 
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
+    @Getter
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Word {
+    public class Word {
 
         private String word;
         private Float start;
