@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.security.dtos;
+package tech.makcymal.polylang.users.dto;
 
 import lombok.Data;
 

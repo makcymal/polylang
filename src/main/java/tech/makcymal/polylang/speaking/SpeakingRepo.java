@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SpeakingsRepo extends JpaRepository<SpeakingEntity, Integer> {
+public interface SpeakingRepo extends JpaRepository<SpeakingEntity, Integer> {
 }

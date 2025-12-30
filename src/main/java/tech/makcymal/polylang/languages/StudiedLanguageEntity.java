@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.makcymal.polylang.common.AbstractEntity;
-import tech.makcymal.polylang.users.entities.UserEntity;
+import tech.makcymal.polylang.users.UserEntity;
 import org.hibernate.annotations.ColumnTransformer;
 
 import jakarta.persistence.Entity;

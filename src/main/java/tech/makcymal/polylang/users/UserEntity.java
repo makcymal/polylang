@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.users.entities;
+package tech.makcymal.polylang.users;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,13 +8,11 @@ import lombok.NoArgsConstructor;
 import tech.makcymal.polylang.common.AbstractEntity;
 import tech.makcymal.polylang.languages.Language;
 import org.hibernate.annotations.ColumnTransformer;
-import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -30,8 +28,6 @@ public class UserEntity extends AbstractEntity {
 
     private String username;
 
-    private UUID passwordSalt;
-
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -41,7 +37,6 @@ public class UserEntity extends AbstractEntity {
     )
     private Language nativeLanguage;
 
-    @CreationTimestamp
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;

@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.users.entities;
+package tech.makcymal.polylang.users.email_confirmation;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity(name = "email_confirmation_codes")
-public class EmailConfirmationCodeEntity extends AbstractEntity {
+public class EmailConfirmationEntity extends AbstractEntity {
 
     private String email;
 

@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -20,7 +21,9 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class FilterChainConfig {
 
     private String[] allowedUrls = new String[]{
-        "/**"
+        "/users/check-if-exists/*",
+        "/users/check-is-confirmed",
+        "/users/register",
     };
 
     private final ExceptionalEntryPoint exceptionalEntryPoint;
@@ -31,6 +34,10 @@ public class FilterChainConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) {
         return httpSecurity.cors(customizer -> {})
             .csrf(AbstractHttpConfigurer::disable)
+            // .csrf(csrf -> csrf
+            //     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            //     .ignoringRequestMatchers("/api/auth/**") // Allow auth endpoints
+            // )
             .exceptionHandling(c -> c
                 .authenticationEntryPoint(exceptionalEntryPoint))
             // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/polylang
+    url: jdbc:postgresql://localhost:5454/polylang
     username: postgres
     password: postgres
   jpa:

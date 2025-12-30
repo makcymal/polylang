@@ -1,16 +1,12 @@
-package tech.makcymal.polylang.security;
+package tech.makcymal.polylang.users.tokens;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.makcymal.polylang.users.entities.UserEntity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -26,9 +22,7 @@ public class RefreshTokenEntity {
 
     private UUID accessJti;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private Integer userId;
 
     private ZonedDateTime expiresAt;
 

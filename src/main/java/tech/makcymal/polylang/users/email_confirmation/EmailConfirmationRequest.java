@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.users.dtos;
+package tech.makcymal.polylang.users.email_confirmation;
 
 import lombok.Data;
 

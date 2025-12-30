@@ -1,8 +1,9 @@
-import {useEffect, useRef, useState} from 'react';
-import {LIGHT, type Theme} from '@/types/Theme.ts';
+import { useEffect, useRef, useState } from 'react';
+import { LIGHT, type Theme } from '@/types/Theme.ts';
+import { AudioRecorder } from '@/utils/AudioRecorder.ts';
+import { getRandomText } from '@/api/TextService.ts';
 import TextPanel from '@/components/TextPanel.tsx';
 import '@/widgets/Gym.css';
-import {getRandomText} from "@/services/TextService.ts";
 
 const textToTranslateTitle = 'Текст для перевода';
 const textToTranslateExample =
@@ -18,52 +19,63 @@ interface GymProps {
     theme: Theme;
 }
 
-export const Gym = ({theme}: GymProps) => {
-    const [textToTranslate, setTextToTranslate] = useState<string>(textToTranslateExample);
-    const [transcribedTranslation, setTranscribedTranslation] = useState<string>('');
-    const [isTranslationRecording, setIsTranslationRecording] = useState(false);
-    const [recordingSeconds, setRecordingSeconds] = useState(0);
-    const recordingSecondsInterval = useRef<number>(0);
-    const [translationAnalysis, setTranslationAnalysis] = useState<string>('');
+export const Gym = ({ theme }: GymProps) => {
+    const [textToTranslate, setTextToTranslate] = useState(textToTranslateExample);
+
+    const recorder = useRef(new AudioRecorder((data: ArrayBuffer) => console.log('recorded', data)));
+    const [isRecording, setIsRecording] = useState(false);
+
+    const timerDescriptor = useRef<number | null>(null);
+    const timerSeconds = useRef(0);
+    const [timerFormatted, setTimerFormatted] = useState('00:00');
+
+    const [transcribedRecord, setTranscribedRecord] = useState('');
+    const [translationAnalysis, setTranslationAnalysis] = useState('');
 
     const exploreTextsToTranslate = () => {
         /* empty */
     };
 
-    const toggleTranslationRecording = () => {
-        setIsTranslationRecording((recording) => !recording);
-    };
-
-    const getRecordingTimer = (): string => {
-        const mins = Math.floor(recordingSeconds / 60);
-        const secs = recordingSeconds % 60;
-
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    useEffect(() => {
+    const getTextToTranslate = () => {
         void getRandomText()
             .then((response) => {
                 setTextToTranslate(response.data.content);
             })
-            .catch((err) => {console.error(err)})
-    }, [])
+            .catch((err) => {
+                console.error(err);
+            });
+    };
 
-    useEffect(() => {
-        if (isTranslationRecording) {
-            recordingSecondsInterval.current = setInterval(() => {
-                setRecordingSeconds((prevTime) => prevTime + 1);
+    const toggleRecording = () => {
+        const _is_recording = recorder.current.toggle();
+
+        setIsRecording(_is_recording);
+
+        if (_is_recording) {
+            timerDescriptor.current = setInterval(() => {
+                timerSeconds.current += 1;
+                console.log(timerSeconds);
+                setTimerFormatted(getTimerFormatted());
             }, 1000);
         } else {
-            clearInterval(recordingSecondsInterval.current);
-        }
-
-        return () => {
-            if (recordingSecondsInterval.current) {
-                clearInterval(recordingSecondsInterval.current);
+            if (timerDescriptor.current) {
+                clearInterval(timerDescriptor.current);
+                timerDescriptor.current = null;
             }
-        };
-    }, [isTranslationRecording]);
+        }
+    };
+
+    const getTimerFormatted = () => {
+        const minutes = Math.floor(timerSeconds.current / 60)
+            .toString()
+            .padStart(2, '0');
+        const seconds = (timerSeconds.current % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds}`;
+    };
+
+    useEffect(() => {
+        getTextToTranslate();
+    }, []);
 
     const analyzeTranslation = () => {
         setTranslationAnalysis('Пока это заглушка. После отправки перевода здесь появится анализ и подсказки');
@@ -84,38 +96,36 @@ export const Gym = ({theme}: GymProps) => {
                 </div>
 
                 <div className="button-with-hint">
-                    <button className="cta translation-button" onClick={toggleTranslationRecording} type="button">
+                    <button className="cta translation-button" onClick={toggleRecording} type="button">
                         <img
                             alt={'Начать переводить'}
                             src={
                                 theme === LIGHT
-                                    ? isTranslationRecording
+                                    ? isRecording
                                         ? '/micro.red-on-white.png'
                                         : '/micro.black-on-white.png'
-                                    : isTranslationRecording
-                                        ? '/micro.red-on-black.png'
-                                        : '/micro.yellow-on-black.png'
+                                    : isRecording
+                                      ? '/micro.red-on-black.png'
+                                      : '/micro.yellow-on-black.png'
                             }
                             className="toggle-recording-icon"
                         />
-                        <p className={isTranslationRecording ? 'recording-timer blink' : 'recording-timer'}>
-                            {getRecordingTimer()}
-                        </p>
+                        <p className={isRecording ? 'recording-timer blink' : 'recording-timer'}>{timerFormatted}</p>
                     </button>
-                    <p className="hint">{isTranslationRecording ? 'Приостановить перевод' : 'Начать переводить'}</p>
+                    <p className="hint">{isRecording ? 'Приостановить перевод' : 'Начать переводить'}</p>
                 </div>
             </div>
 
             <div className="translation-contents">
                 <div className="text-to-translate-wr">
-                    <TextPanel title={textToTranslateTitle} text={textToTranslate} isEditable={false}/>
+                    <TextPanel title={textToTranslateTitle} text={textToTranslate} isEditable={false} />
                 </div>
                 <div className="transcribed-translation-wr">
                     <TextPanel
                         title={transcribedTranslationTitle}
-                        text={transcribedTranslation}
+                        text={transcribedRecord}
                         isEditable={true}
-                        onTextEdit={setTranscribedTranslation}
+                        onTextEdit={setTranscribedRecord}
                         placeholder={transcribedTranslationPlaceholder}
                         hint={transcribedTranslationHint}
                     />
@@ -128,7 +138,7 @@ export const Gym = ({theme}: GymProps) => {
                         Анализировать перевод
                     </button>
                 </div>
-                <TextPanel text={translationAnalysis} placeholder={translationAnalysisPlaceholder}/>
+                <TextPanel text={translationAnalysis} placeholder={translationAnalysisPlaceholder} />
             </div>
         </main>
     );

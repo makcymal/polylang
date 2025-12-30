@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.makcymal.polylang.common.AbstractEntity;
 import tech.makcymal.polylang.texts.TextEntity;
-import tech.makcymal.polylang.users.entities.UserEntity;
+import tech.makcymal.polylang.users.UserEntity;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Entity;
@@ -21,7 +21,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Entity(name = "speakings")
+@Entity(name = "speaking")
 public class SpeakingEntity extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

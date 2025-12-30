@@ -13,8 +13,11 @@ import tech.makcymal.polylang.security.exceptions.ExpiredTokenException;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -70,31 +73,14 @@ public class JwtService {
         return auth;
     }
 
-    // public String issueAccess(String email) {
-    //     ZonedDateTime now = ZonedDateTime.now();
-    //     String jwt = JWT.create()
-    //             .withJWTId(jti)
-    //             .withSubject(email)
-    //             .withExpiresAt(now.plusSeconds(props.getAccessTokenValiditySeconds()).toInstant())
-    //             .sign(algoCtx.getAlgorithm());
-    //     return jwt;
-    // }
-
-    // public Pair<RefreshTokenEntity, String> issueRefresh(String email) {
-    //     ZonedDateTime now = ZonedDateTime.now();
-    //
-    //     RefreshTokenEntity entity = RefreshTokenEntity.builder()
-    //             .jti(UUID.randomUUID())
-    //             .accessJti()
-    //             .build()
-    //
-    //     String jwt = JWT.create()
-    //             .withJWTId(jti)
-    //             .withClaim("access_jti", accessJti)
-    //             .withSubject(email)
-    //             .withExpiresAt(now.plusDays(props.getRefreshTokenValidityDays()).toInstant())
-    //             .sign(algoCtx.getAlgorithm());
-    //     return jwt;
-    // }
+    public String issueJwt(UUID jti, String sub, Duration validityDuration) {
+        ZonedDateTime now = ZonedDateTime.now();
+        String jwt = JWT.create()
+                .withJWTId(jti.toString())
+                .withSubject(sub)
+                .withExpiresAt(now.plus(validityDuration).toInstant())
+                .sign(algoCtx.getAlgorithm());
+        return jwt;
+    }
 
 }
