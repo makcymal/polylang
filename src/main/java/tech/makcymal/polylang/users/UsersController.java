@@ -8,10 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import tech.makcymal.polylang.common.SerdeUtils;
 import tech.makcymal.polylang.security.SecurityProperties;
 import tech.makcymal.polylang.users.dto.CheckIfExistsResponse;
+import tech.makcymal.polylang.users.dto.ConfirmEmailResponse;
 import tech.makcymal.polylang.users.dto.LoginRequest;
 import tech.makcymal.polylang.users.email_confirmation.EmailConfirmationRequest;
 import tech.makcymal.polylang.users.dto.Cookies;
@@ -30,9 +32,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UsersController {
 
+    private static final String USER_ID_COOKIE = "UID";
     private static final String CURRENT_USER_COOKIE = "current-user";
     private static final String ACCESS_JWT_COOKIE = "access-jwt";
     private static final String REFRESH_JTI_COOKIE = "refresh-jti";
+    private static final String LOGOUT_JTI_COOKIE = "logout-jti";
 
     private final SecurityProperties securityProps;
     private final UsersService service;
@@ -53,29 +57,40 @@ public class UsersController {
             UserModel userModel = service.register(registerRequest);
             cookies = new Cookies(userModel, null, null);
         } catch (RuntimeException e) {
+            log.error(e.getMessage(), e);
             cookies = Cookies.ofNulls();
         }
 
-        ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CREATED);
-        setCookies(response, cookies);
+        HttpHeaders headers = new HttpHeaders();
+        setCookies(headers, cookies);
+        ResponseEntity<Void> response = new ResponseEntity<>(headers, HttpStatus.CREATED);
         return response;
     }
 
     // success -> set current-user, access-token, refresh-token
     // fail -> set current-user & delete access-token, refresh-token
-    @PostMapping("/confirm")
-    public ResponseEntity<Void> confirmEmail(@RequestBody EmailConfirmationRequest emailConfirmationRequest) {
+    @PutMapping("/confirm")
+    public ResponseEntity<ConfirmEmailResponse> confirmEmail(
+            @RequestBody EmailConfirmationRequest emailConfirmationRequest,
+            @CookieValue(name = USER_ID_COOKIE, required = false) UUID userId
+    ) {
+        ConfirmEmailResponse dto = new ConfirmEmailResponse(emailConfirmationRequest.getEmail(), false);
         Cookies cookies;
 
         try {
             cookies = service.confirmEmail(emailConfirmationRequest);
+            if (cookies.getCurrentUser() != null) {
+                dto.setConfirmed(cookies.getCurrentUser().isEmailConfirmed());
+            }
         } catch (RuntimeException e) {
+            log.error(e.getMessage(), e);
             UserModel user = service.findByEmail(emailConfirmationRequest.getEmail());
             cookies = new Cookies(user, null, null);
         }
 
-        ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
-        setCookies(response, cookies);
+        HttpHeaders headers = new HttpHeaders();
+        setCookies(headers, cookies);
+        ResponseEntity<ConfirmEmailResponse> response = ResponseEntity.status(HttpStatus.OK).headers(headers).body(dto);
         return response;
     }
 
@@ -89,72 +104,86 @@ public class UsersController {
         try {
             cookies = service.login(loginRequest);
         } catch (RuntimeException e) {
+            log.error(e.getMessage(), e);
             cookies = Cookies.ofNulls();
         }
 
-        ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
-        setCookies(response, cookies);
+        HttpHeaders headers = new HttpHeaders();
+        setCookies(headers, cookies);
+        ResponseEntity<Void> response = new ResponseEntity<>(headers, HttpStatus.OK);
         return response;
     }
 
     // success -> set current-user, access-token, refresh-token
     // fail -> delete current-user, access-token, refresh-token
-    @PostMapping("/forget/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_JTI_COOKIE, required = false) UUID refreshJti) {
         Cookies cookies;
 
         try {
             cookies = service.refreshTokens(refreshJti);
         } catch (RuntimeException e) {
+            log.error(e.getMessage(), e);
             cookies = Cookies.ofNulls();
         }
 
-        ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
-        setCookies(response, cookies);
+        HttpHeaders headers = new HttpHeaders();
+        setCookies(headers, cookies);
+        ResponseEntity<Void> response = new ResponseEntity<>(headers, HttpStatus.OK);
         return response;
 
     }
 
     // success | fail -> delete current-user, access-token, refresh-token
-    @PostMapping("/forget/logout")
-    public ResponseEntity<Void> logout(@CookieValue(name = REFRESH_JTI_COOKIE, required = false) UUID refreshJti) {
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@CookieValue(name = LOGOUT_JTI_COOKIE, required = false) UUID refreshJti) {
         Cookies cookies = Cookies.ofNulls();
-        ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
-        setCookies(response, cookies);
+        HttpHeaders headers = new HttpHeaders();
+        setCookies(headers, cookies);
+        ResponseEntity<Void> response = new ResponseEntity<>(headers, HttpStatus.OK);
         return response;
     }
 
-    private <T> void setCookies(ResponseEntity<T> response, Cookies cookies) {
+    private void setCookies(HttpHeaders headers, Cookies cookies) {
         if (cookies.getCurrentUser() != null) {
-            setCurrentUserCookie(response, cookies.getCurrentUser());
+            setCurrentUserCookie(headers, cookies.getCurrentUser());
         } else {
-            deleteCookie(response, CURRENT_USER_COOKIE);
+            deleteCookie(headers, USER_ID_COOKIE);
+            deleteCookie(headers, CURRENT_USER_COOKIE);
         }
         if (cookies.getAccessJwt() != null) {
-            setAccessTokenCookie(response, cookies.getAccessJwt());
+            setAccessTokenCookie(headers, cookies.getAccessJwt());
         } else {
-            deleteCookie(response, ACCESS_JWT_COOKIE);
+            deleteCookie(headers, ACCESS_JWT_COOKIE);
         }
         if (cookies.getRefreshJti() != null) {
-            setRefreshTokenCookie(response, cookies.getRefreshJti().toString());
+            setRefreshTokenCookie(headers, cookies.getRefreshJti().toString());
         } else {
-            deleteCookie(response, REFRESH_JTI_COOKIE);
+            deleteCookie(headers, REFRESH_JTI_COOKIE);
+            deleteCookie(headers, LOGOUT_JTI_COOKIE);
         }
     }
 
-    private <T> void setCurrentUserCookie(ResponseEntity<T> response, UserModel userModel) {
-        String value = SerdeUtils.serialize(userModel);
-        ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, value)
+    private void setCurrentUserCookie(HttpHeaders headers, UserModel userModel) {
+        ResponseCookie userCookie = ResponseCookie.from(CURRENT_USER_COOKIE, SerdeUtils.serializeInBase64(userModel))
                 .secure(true)
                 .httpOnly(false)
                 .sameSite("Strict")
                 .path("/never-sent")
                 .maxAge(securityProps.getRefreshTokenValidity())
                 .build();
-        response.getHeaders().add(HttpHeaders.SET_COOKIE, cookie.toString());
+        ResponseCookie userIdCookie = ResponseCookie.from(USER_ID_COOKIE, userModel.getId().toString())
+                .secure(true)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .path("/users/refresh")
+                .maxAge(securityProps.getRefreshTokenValidity())
+                .build();
+        headers.add(HttpHeaders.SET_COOKIE, userCookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, userIdCookie.toString());
     }
 
-    private <T> void setAccessTokenCookie(ResponseEntity<T> response, String value) {
+    private void setAccessTokenCookie(HttpHeaders headers, String value) {
         ResponseCookie cookie = ResponseCookie.from(ACCESS_JWT_COOKIE, value)
                 .secure(true)
                 .httpOnly(true)
@@ -162,22 +191,30 @@ public class UsersController {
                 .path("/")
                 .maxAge(securityProps.getAccessTokenValidity())
                 .build();
-        response.getHeaders().add(HttpHeaders.SET_COOKIE, cookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private <T> void setRefreshTokenCookie(ResponseEntity<T> response, String value) {
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_JTI_COOKIE, value)
+    private void setRefreshTokenCookie(HttpHeaders headers, String value) {
+        ResponseCookie refreshCookie = ResponseCookie.from(REFRESH_JTI_COOKIE, value)
                 .secure(true)
                 .httpOnly(true)
                 .sameSite("Strict")
-                .path("/users/forget")
+                .path("/users/refresh")
                 .maxAge(securityProps.getRefreshTokenValidity())
                 .build();
-        response.getHeaders().add(HttpHeaders.SET_COOKIE, cookie.toString());
+        ResponseCookie logoutCookie = ResponseCookie.from(LOGOUT_JTI_COOKIE, value)
+                .secure(true)
+                .httpOnly(true)
+                .sameSite("Strict")
+                .path("/users/logout")
+                .maxAge(securityProps.getRefreshTokenValidity())
+                .build();
+        headers.add(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, logoutCookie.toString());
     }
 
 
-    private <T> void deleteCookie(ResponseEntity<T> response, String name) {
+    private void deleteCookie(HttpHeaders headers, String name) {
         ResponseCookie cookie = ResponseCookie.from(name, "null")
                 .secure(true)
                 .httpOnly(true)
@@ -185,7 +222,7 @@ public class UsersController {
                 .path("/")
                 .maxAge(0)
                 .build();
-        response.getHeaders().add(HttpHeaders.SET_COOKIE, cookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
 }

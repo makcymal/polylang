@@ -22,8 +22,9 @@ public class FilterChainConfig {
 
     private String[] allowedUrls = new String[]{
         "/users/check-if-exists/*",
-        "/users/check-is-confirmed",
         "/users/register",
+        "/users/confirm",
+        "/users/login",
     };
 
     private final ExceptionalEntryPoint exceptionalEntryPoint;

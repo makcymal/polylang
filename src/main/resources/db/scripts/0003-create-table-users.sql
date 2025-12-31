@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users
 (
-    id                     SERIAL PRIMARY KEY,
+    id                     uuid PRIMARY KEY,
     email                  VARCHAR(255) UNIQUE      NOT NULL,
     email_confirmed        BOOLEAN                  NOT NULL DEFAULT FALSE,
     username               VARCHAR(64) UNIQUE       NOT NULL,

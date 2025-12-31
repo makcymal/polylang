@@ -12,15 +12,19 @@ import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity(name = "users")
-public class UserEntity extends AbstractEntity {
+public class UserEntity {
+
+    @Id
+    private UUID id;
 
     private String email;
 

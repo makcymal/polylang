@@ -2,10 +2,19 @@ package tech.makcymal.polylang.users.email_confirmation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.ZonedDateTime;
 
 @Repository
 public interface EmailConfirmationRepo extends JpaRepository<EmailConfirmationEntity, Integer> {
 
+    boolean existsByEmail(String email);
+
+    @Transactional
     void deleteAllByEmail(String email);
+
+    @Transactional
+    void deleteAllByEmailAndExpiresAtBefore(String email, ZonedDateTime expiresAtBefore);
 
 }

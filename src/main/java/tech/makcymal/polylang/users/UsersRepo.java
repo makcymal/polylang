@@ -8,13 +8,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UsersRepo extends JpaRepository<UserEntity, Integer> {
+public interface UsersRepo extends JpaRepository<UserEntity, UUID> {
 
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
+
+    Optional<UserEntity> findByEmail(String email);
+
+    Optional<UserEntity> findByUsername(String username);
 
     @Query(value = """
                    UPDATE users
@@ -23,15 +28,11 @@ public interface UsersRepo extends JpaRepository<UserEntity, Integer> {
                                    FROM email_confirmation_codes
                                    WHERE email = :email
                                      AND code = :code
-                                     AND expires_at < NOW());
+                                     AND expires_at > NOW());
                    """,
            nativeQuery = true)
     @Modifying
     @Transactional
     void tryToConfirmEmail(String email, String code);
-
-    Optional<UserEntity> findByEmail(String email);
-
-    Optional<UserEntity> findByUsername(String username);
 
 }

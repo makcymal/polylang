@@ -8,7 +8,6 @@ import tech.makcymal.polylang.users.UserModel;
 import java.util.UUID;
 
 @Data
-@Builder
 @AllArgsConstructor
 public class Cookies {
 

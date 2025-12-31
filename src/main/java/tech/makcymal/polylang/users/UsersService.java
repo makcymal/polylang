@@ -1,11 +1,11 @@
 package tech.makcymal.polylang.users;
 
-import com.auth0.jwt.JWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.transaction.annotation.Transactional;
 import tech.makcymal.polylang.common.exceptions.HttpException;
 import tech.makcymal.polylang.security.JwtService;
 import tech.makcymal.polylang.security.SecurityProperties;
@@ -58,6 +58,7 @@ public class UsersService {
         return entityToModel(userEntity);
     }
 
+    @Transactional
     public UserModel register(RegisterRequest request) {
         UserEntity savedEntity;
 
@@ -72,6 +73,26 @@ public class UsersService {
         return entityToModel(savedEntity);
     }
 
+    @Transactional
+    public Cookies confirmEmail(EmailConfirmationRequest request) {
+        emailConfirmationRepo.deleteAllByEmailAndExpiresAtBefore(request.getEmail(), ZonedDateTime.now());
+
+        usersRepo.tryToConfirmEmail(request.getEmail(), request.getCode());
+
+        Optional<UserEntity> userEntityOpt = usersRepo.findByEmail(request.getEmail());
+        if (userEntityOpt.isEmpty()) {
+            return Cookies.ofNulls();
+        }
+        UserEntity userEntity = userEntityOpt.get();
+
+        if (!userEntity.getEmailConfirmed() && !emailConfirmationRepo.existsByEmail(request.getEmail())) {
+            startEmailConfirmation(userEntity);
+        }
+
+        return generateCookies(userEntity);
+    }
+
+    @Transactional
     void startEmailConfirmation(UserEntity user) {
         emailConfirmationRepo.deleteAllByEmail(user.getEmail());
 
@@ -86,25 +107,57 @@ public class UsersService {
         log.info("Confirm - email: [{}], code: [{}]", user.getEmail(), emailConfirmationEntity.getCode());
     }
 
-    public Cookies confirmEmail(EmailConfirmationRequest request) {
-        usersRepo.tryToConfirmEmail(request.getEmail(), request.getCode());
+    @Transactional
+    public Cookies login(LoginRequest request) {
+        Optional<UserEntity> userEntityOpt = isThisEmail(request.getEmailOrUsername())
+                                             ? usersRepo.findByEmail(request.getEmailOrUsername())
+                                             : usersRepo.findByUsername(request.getEmailOrUsername());
 
-        Optional<UserEntity> userEntityOpt = usersRepo.findByEmail(request.getEmail());
         if (userEntityOpt.isEmpty()) {
             return Cookies.ofNulls();
         }
         UserEntity userEntity = userEntityOpt.get();
 
-        UUID refreshJti = UUID.randomUUID();
-        UUID accessJti = UUID.randomUUID();
-        issueRefreshJwt(refreshJti, accessJti, userEntity.getId());
-        String accessJwt = issueAccessJwt(accessJti, userEntity.getEmail());
+        boolean pwCorrect = BCrypt.checkpw(request.getPassword(), userEntity.getPasswordHash());
+        if (!pwCorrect) {
+            return Cookies.ofNulls();
+        }
 
-        return new Cookies(entityToModel(userEntity), accessJwt, refreshJti);
+        forgetUserId(userEntity.getId());
+
+        return generateCookies(userEntity);
     }
 
-    void issueRefreshJwt(UUID refreshJti, UUID accessJti, int userId) {
-        forget(refreshJti, userId);
+    @Transactional
+    public Cookies refreshTokens(UUID oldRefreshJti) {
+        Optional<RefreshTokenEntity> refreshTokenEntityOpt = refreshTokensRepo.findByJti(oldRefreshJti);
+        if (refreshTokenEntityOpt.isEmpty() || refreshTokenEntityOpt.get().getExpiresAt().isAfter(ZonedDateTime.now())) {
+            return Cookies.ofNulls();
+        }
+        RefreshTokenEntity refreshTokenEntity = refreshTokenEntityOpt.get();
+
+        Optional<UserEntity> userEntityOpt = usersRepo.findById(refreshTokenEntity.getUserId());
+        if (userEntityOpt.isEmpty()) {
+            return Cookies.ofNulls();
+        }
+        UserEntity userEntity = userEntityOpt.get();
+
+        forgetRefreshJtiAndUserId(oldRefreshJti, userEntity.getId());
+
+        return generateCookies(userEntity);
+    }
+
+    Cookies generateCookies(UserEntity user) {
+        UUID refreshJti = UUID.randomUUID();
+        UUID accessJti = UUID.randomUUID();
+        issueRefreshJwt(refreshJti, accessJti, user.getId());
+        String accessJwt = issueAccessJwt(accessJti, user.getEmail());
+
+        return new Cookies(entityToModel(user), accessJwt, refreshJti);
+    }
+
+    void issueRefreshJwt(UUID refreshJti, UUID accessJti, UUID userId) {
+        forgetRefreshJtiAndUserId(refreshJti, userId);
 
         ZonedDateTime now = ZonedDateTime.now();
         RefreshTokenEntity entity = RefreshTokenEntity.builder()
@@ -121,66 +174,20 @@ public class UsersService {
         return jwtService.issueJwt(jti, userEmail, securityProps.getAccessTokenValidity());
     }
 
-    public Cookies login(LoginRequest request) {
-        Optional<UserEntity> userEntityOpt = isThisEmail(request.getEmailOrUsername())
-                                             ? usersRepo.findByEmail(request.getEmailOrUsername())
-                                             : usersRepo.findByUsername(request.getEmailOrUsername());
-
-        if (userEntityOpt.isEmpty()) {
-            return Cookies.ofNulls();
-        }
-        UserEntity userEntity = userEntityOpt.get();
-
-        boolean pwCorrect = BCrypt.checkpw(request.getPassword(), userEntity.getPasswordHash());
-        if (!pwCorrect) {
-            return Cookies.ofNulls();
-        }
-
-        forget(userEntity.getId());
-        UUID refreshJti = UUID.randomUUID();
-        UUID accessJti = UUID.randomUUID();
-        issueRefreshJwt(refreshJti, accessJti, userEntity.getId());
-        String accessJwt = issueAccessJwt(accessJti, userEntity.getEmail());
-
-        return new Cookies(entityToModel(userEntity), accessJwt, refreshJti);
+    void forgetRefreshJtiAndUserId(UUID refreshJti, UUID userId) {
+        forgetRefreshJti(refreshJti);
+        forgetUserId(userId);
     }
 
-    public Cookies refreshTokens(UUID oldRefreshJti) {
-        Optional<RefreshTokenEntity> refreshTokenEntityOpt = refreshTokensRepo.findByJti(oldRefreshJti);
-        if (refreshTokenEntityOpt.isEmpty() || refreshTokenEntityOpt.get().getExpiresAt().isAfter(ZonedDateTime.now())) {
-            return Cookies.ofNulls();
-        }
-        RefreshTokenEntity refreshTokenEntity = refreshTokenEntityOpt.get();
-
-        Optional<UserEntity> userEntityOpt = usersRepo.findById(refreshTokenEntity.getUserId());
-        if (userEntityOpt.isEmpty()) {
-            return Cookies.ofNulls();
-        }
-        UserEntity userEntity = userEntityOpt.get();
-
-        forget(oldRefreshJti, userEntity.getId());
-        UUID newRefreshJti = UUID.randomUUID();
-        UUID accessJti = UUID.randomUUID();
-        issueRefreshJwt(newRefreshJti, accessJti, userEntity.getId());
-        String accessJwt = issueAccessJwt(accessJti, userEntity.getEmail());
-
-        return new Cookies(entityToModel(userEntity), accessJwt, newRefreshJti);
-    }
-
-    public void forget(UUID refreshJti) {
+    void forgetRefreshJti(UUID refreshJti) {
         if (refreshJti == null) {
             return;
         }
         refreshTokensRepo.deleteByJti(refreshJti);
     }
 
-    public void forget(int userId) {
+    void forgetUserId(UUID userId) {
         refreshTokensRepo.deleteAllByUserId(userId);
-    }
-
-    public void forget(UUID refreshJti, int userId) {
-        forget(refreshJti);
-        forget(userId);
     }
 
     UserEntity registerRequestToEntity(RegisterRequest request) {
@@ -188,6 +195,7 @@ public class UsersService {
         ZonedDateTime now = ZonedDateTime.now();
 
         return UserEntity.builder()
+                .id(UUID.randomUUID())
                 .email(request.getEmail())
                 .emailConfirmed(false)
                 .username(request.getUsername())
