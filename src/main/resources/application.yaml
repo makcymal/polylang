@@ -15,7 +15,7 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
     properties:
       hibernate:
         show-sql: ${JPA_SHOW_SQL}
@@ -35,11 +35,12 @@ springdoc:
   swagger-ui:
     enabled: ${SWAGGER_ENABLED}
 
-jwt:
+security:
   public-key: ${PUBLIC_KEY}
   private-key: ${REFRESH_KEY}
   access-token-validity: ${ACCESS_TOKEN_VALIDITY}
   refresh-token-validity: ${REFRESH_TOKEN_VALIDITY}
+  email-confirmation-code-validity: ${EMAIL_CONFIRMATION_CODE_VALIDITY}
 
 speaking:
   speech-records-dir: ${SPEECH_RECORDS_DIR}

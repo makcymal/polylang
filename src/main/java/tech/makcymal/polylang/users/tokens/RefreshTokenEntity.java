@@ -22,7 +22,7 @@ public class RefreshTokenEntity {
 
     private UUID accessJti;
 
-    private UUID userId;
+    private Integer userId;
 
     private ZonedDateTime expiresAt;
 

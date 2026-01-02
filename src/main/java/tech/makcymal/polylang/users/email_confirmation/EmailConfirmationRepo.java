@@ -5,14 +5,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface EmailConfirmationRepo extends JpaRepository<EmailConfirmationEntity, Integer> {
+public interface EmailConfirmationRepo extends JpaRepository<EmailConfirmationEntity, UUID> {
 
-    boolean existsByEmail(String email);
-
-    @Transactional
-    void deleteAllByEmail(String email);
+    Optional<EmailConfirmationEntity> findByEmail(String email);
 
     @Transactional
     void deleteAllByEmailAndExpiresAtBefore(String email, ZonedDateTime expiresAtBefore);

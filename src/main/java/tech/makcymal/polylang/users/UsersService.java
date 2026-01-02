@@ -9,8 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.makcymal.polylang.common.exceptions.HttpException;
 import tech.makcymal.polylang.security.JwtService;
 import tech.makcymal.polylang.security.SecurityProperties;
+import tech.makcymal.polylang.security.exceptions.AuthException;
 import tech.makcymal.polylang.users.dto.CheckIfExistsResponse;
-import tech.makcymal.polylang.users.dto.Cookies;
+import tech.makcymal.polylang.users.dto.Session;
 import tech.makcymal.polylang.users.dto.LoginRequest;
 import tech.makcymal.polylang.users.dto.RegisterRequest;
 import tech.makcymal.polylang.users.email_confirmation.EmailConfirmationEntity;
@@ -53,13 +54,8 @@ public class UsersService {
         }
     }
 
-    public UserModel findByEmail(String email) {
-        UserEntity userEntity = usersRepo.findByEmail(email).orElse(null);
-        return entityToModel(userEntity);
-    }
-
     @Transactional
-    public UserModel register(RegisterRequest request) {
+    public Session register(RegisterRequest request) {
         UserEntity savedEntity;
 
         try {
@@ -68,96 +64,154 @@ public class UsersService {
             throw new HttpException(HttpStatus.BAD_REQUEST, "User with this email already exists");
         }
 
-        startEmailConfirmation(savedEntity);
+        Session session = Session.ofNulls();
+        session.setCurrentUser(entityToModel(savedEntity));
 
-        return entityToModel(savedEntity);
+        provideEmailConfirmation(session);
+
+        return session;
     }
 
     @Transactional
-    public Cookies confirmEmail(EmailConfirmationRequest request) {
-        emailConfirmationRepo.deleteAllByEmailAndExpiresAtBefore(request.getEmail(), ZonedDateTime.now());
-
+    public Session confirmEmail(EmailConfirmationRequest request) {
         usersRepo.tryToConfirmEmail(request.getEmail(), request.getCode());
 
         Optional<UserEntity> userEntityOpt = usersRepo.findByEmail(request.getEmail());
         if (userEntityOpt.isEmpty()) {
-            return Cookies.ofNulls();
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User with this email doesn't exist");
         }
         UserEntity userEntity = userEntityOpt.get();
 
-        if (!userEntity.getEmailConfirmed() && !emailConfirmationRepo.existsByEmail(request.getEmail())) {
-            startEmailConfirmation(userEntity);
+        Session session = Session.ofNulls();
+        session.setCurrentUser(entityToModel(userEntity));
+
+        provideEmailConfirmation(session);
+        generateTokens(session);
+
+        return session;
+    }
+
+    @Transactional
+    public Session provideEmailConfirmation(String email) {
+        Optional<UserEntity> userEntityOpt = usersRepo.findByEmail(email);
+        if (userEntityOpt.isEmpty()) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User with this email doesn't exist");
         }
+        UserEntity userEntity = userEntityOpt.get();
 
-        return generateCookies(userEntity);
+        Session session = Session.ofNulls();
+        session.setCurrentUser(entityToModel(userEntity));
+
+        provideEmailConfirmation(session);
+
+        return session;
     }
 
     @Transactional
-    void startEmailConfirmation(UserEntity user) {
-        emailConfirmationRepo.deleteAllByEmail(user.getEmail());
-
-        EmailConfirmationEntity emailConfirmationEntity = EmailConfirmationEntity.builder()
-                .email(user.getEmail())
-                .code(String.valueOf(ThreadLocalRandom.current().nextInt((int) 1e+5, (int) 1e+6)))
-                .expiresAt(ZonedDateTime.now().plusDays(1))
-                .build();
-
-        emailConfirmationRepo.save(emailConfirmationEntity);
-
-        log.info("Confirm - email: [{}], code: [{}]", user.getEmail(), emailConfirmationEntity.getCode());
-    }
-
-    @Transactional
-    public Cookies login(LoginRequest request) {
+    public Session login(LoginRequest request) {
         Optional<UserEntity> userEntityOpt = isThisEmail(request.getEmailOrUsername())
                                              ? usersRepo.findByEmail(request.getEmailOrUsername())
                                              : usersRepo.findByUsername(request.getEmailOrUsername());
 
         if (userEntityOpt.isEmpty()) {
-            return Cookies.ofNulls();
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User with this email doesn't exist");
         }
         UserEntity userEntity = userEntityOpt.get();
 
         boolean pwCorrect = BCrypt.checkpw(request.getPassword(), userEntity.getPasswordHash());
         if (!pwCorrect) {
-            return Cookies.ofNulls();
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "Wrong password");
         }
 
-        forgetUserId(userEntity.getId());
+        Session session = Session.ofNulls();
+        session.setCurrentUser(entityToModel(userEntity));
 
-        return generateCookies(userEntity);
+        if (userEntity.getEmailConfirmed()) {
+            generateTokens(session);
+        } else {
+            provideEmailConfirmation(session);
+        }
+
+        return session;
     }
 
     @Transactional
-    public Cookies refreshTokens(UUID oldRefreshJti) {
-        Optional<RefreshTokenEntity> refreshTokenEntityOpt = refreshTokensRepo.findByJti(oldRefreshJti);
-        if (refreshTokenEntityOpt.isEmpty() || refreshTokenEntityOpt.get().getExpiresAt().isAfter(ZonedDateTime.now())) {
-            return Cookies.ofNulls();
+    public Session refreshTokens(UUID oldRefreshJti) {
+        if (oldRefreshJti == null) {
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "Refresh jti is null");
+        }
+
+        Optional<RefreshTokenEntity> refreshTokenEntityOpt =
+                refreshTokensRepo.findByJtiAndExpiresAtAfter(oldRefreshJti, ZonedDateTime.now());
+        if (refreshTokenEntityOpt.isEmpty()) {
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "Refresh token not found or expired");
         }
         RefreshTokenEntity refreshTokenEntity = refreshTokenEntityOpt.get();
 
         Optional<UserEntity> userEntityOpt = usersRepo.findById(refreshTokenEntity.getUserId());
         if (userEntityOpt.isEmpty()) {
-            return Cookies.ofNulls();
+            throw new HttpException(HttpStatus.BAD_REQUEST, "There is no user who owns this refresh token");
         }
         UserEntity userEntity = userEntityOpt.get();
 
-        forgetRefreshJtiAndUserId(oldRefreshJti, userEntity.getId());
+        Session session = Session.ofNulls();
+        session.setCurrentUser(entityToModel(userEntity));
 
-        return generateCookies(userEntity);
+        generateTokens(session);
+
+        return session;
     }
 
-    Cookies generateCookies(UserEntity user) {
+    @Transactional
+    public void logout(UUID refreshJti) {
+        if (refreshJti == null) {
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "Refresh jti is null");
+        }
+        refreshTokensRepo.deleteByJti(refreshJti);
+    }
+
+    void provideEmailConfirmation(Session session) {
+        UserModel user = session.getCurrentUser();
+        if (user.isEmailConfirmed()) {
+            session.setEmailConfirmationCodeId(null);
+            return;
+        }
+
+        emailConfirmationRepo.deleteAllByEmailAndExpiresAtBefore(user.getEmail(), ZonedDateTime.now());
+        Optional<EmailConfirmationEntity> foundEmailConfirmationCode = emailConfirmationRepo.findByEmail(user.getEmail());
+
+        if (foundEmailConfirmationCode.isPresent()) {
+            session.setEmailConfirmationCodeId(foundEmailConfirmationCode.get().getId());
+        } else {
+            UUID id = UUID.randomUUID();
+            EmailConfirmationEntity emailConfirmationEntity = EmailConfirmationEntity.builder()
+                    .id(id)
+                    .email(user.getEmail())
+                    .code(String.valueOf(ThreadLocalRandom.current().nextInt((int) 1e+5, (int) 1e+6)))
+                    .expiresAt(ZonedDateTime.now().plus(securityProps.getEmailConfirmationCodeValidity()))
+                    .build();
+            emailConfirmationRepo.save(emailConfirmationEntity);
+
+            log.info("Confirm - email: [{}], code: [{}]", user.getEmail(), emailConfirmationEntity.getCode());
+
+            session.setEmailConfirmationCodeId(id);
+        }
+    }
+
+    void generateTokens(Session session) {
+        UserModel user = session.getCurrentUser();
+
         UUID refreshJti = UUID.randomUUID();
         UUID accessJti = UUID.randomUUID();
-        issueRefreshJwt(refreshJti, accessJti, user.getId());
+        issueRefreshJwt(user.getId(), accessJti, refreshJti);
         String accessJwt = issueAccessJwt(accessJti, user.getEmail());
 
-        return new Cookies(entityToModel(user), accessJwt, refreshJti);
+        session.setAccessJwt(accessJwt);
+        session.setRefreshJti(refreshJti);
     }
 
-    void issueRefreshJwt(UUID refreshJti, UUID accessJti, UUID userId) {
-        forgetRefreshJtiAndUserId(refreshJti, userId);
+    void issueRefreshJwt(int userId, UUID accessJti, UUID refreshJti) {
+        refreshTokensRepo.deleteAllByUserId(userId);
 
         ZonedDateTime now = ZonedDateTime.now();
         RefreshTokenEntity entity = RefreshTokenEntity.builder()
@@ -174,28 +228,11 @@ public class UsersService {
         return jwtService.issueJwt(jti, userEmail, securityProps.getAccessTokenValidity());
     }
 
-    void forgetRefreshJtiAndUserId(UUID refreshJti, UUID userId) {
-        forgetRefreshJti(refreshJti);
-        forgetUserId(userId);
-    }
-
-    void forgetRefreshJti(UUID refreshJti) {
-        if (refreshJti == null) {
-            return;
-        }
-        refreshTokensRepo.deleteByJti(refreshJti);
-    }
-
-    void forgetUserId(UUID userId) {
-        refreshTokensRepo.deleteAllByUserId(userId);
-    }
-
     UserEntity registerRequestToEntity(RegisterRequest request) {
         String hashedPw = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         ZonedDateTime now = ZonedDateTime.now();
 
         return UserEntity.builder()
-                .id(UUID.randomUUID())
                 .email(request.getEmail())
                 .emailConfirmed(false)
                 .username(request.getUsername())

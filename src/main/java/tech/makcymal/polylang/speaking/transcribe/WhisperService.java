@@ -75,14 +75,14 @@ public class WhisperService {
 
     @Scheduled(fixedRateString = "${speaking.transcribe-by-snippets-of-duration}")
     private void scheduleTranscription() {
-        log.info("Running WhisperService.scheduleTranscription...");
+        // log.info("Running WhisperService.scheduleTranscription...");
 
         for (int snippetIdx = 0; snippetIdx < requests.size(); snippetIdx++) {
             final int finalSnippetIdx = snippetIdx;
             executor.submit(() -> executeWhisperAndReadResponses(finalSnippetIdx));
         }
 
-        log.info("Running WhisperService.scheduleTranscription...DONE");
+        // log.info("Running WhisperService.scheduleTranscription...DONE");
     }
 
     private void executeWhisperAndReadResponses(int snippetIdx) {

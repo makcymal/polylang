@@ -4,14 +4,13 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "jwt")
+@ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 
     @NotBlank
@@ -25,5 +24,8 @@ public class SecurityProperties {
 
     @NotNull
     private Duration refreshTokenValidity;
+
+    @NotNull
+    private Duration emailConfirmationCodeValidity;
 
 }

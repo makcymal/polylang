@@ -12,10 +12,12 @@ import tech.makcymal.polylang.security.exceptions.BadTokenException;
 import tech.makcymal.polylang.security.exceptions.ExpiredTokenException;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,18 +26,20 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private static final String AUTH_HEADER = "Authorization";
-    private static final String AUTH_PREFIX = "Bearer ";
+    private static final String ACCESS_JWT_COOKIE = "access-jwt";
 
     private final AlgorithmContext algoCtx;
-    private final SecurityProperties props;
 
     public String getJwtValueFromRequest(HttpServletRequest request) {
-        String value = Optional.ofNullable(request.getHeader(AUTH_HEADER))
-                .filter(h -> h.startsWith(AUTH_PREFIX))
-                .map(h -> h.substring(AUTH_PREFIX.length()))
-                .orElse(null);
-        return value;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(ACCESS_JWT_COOKIE)) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     public DecodedJWT decodeAndVerifyJwt(String value) {

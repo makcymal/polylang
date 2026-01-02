@@ -8,15 +8,19 @@ import lombok.NoArgsConstructor;
 import tech.makcymal.polylang.common.AbstractEntity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity(name = "email_confirmation_codes")
-public class EmailConfirmationEntity extends AbstractEntity {
+public class EmailConfirmationEntity {
+
+    @Id
+    private UUID id;
 
     private String email;
 

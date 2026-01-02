@@ -1,6 +1,7 @@
 package tech.makcymal.polylang.security.context;
 
 import com.auth0.jwt.interfaces.Claim;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class JwtAuth implements Authentication {
 
     private boolean authenticated;
@@ -22,6 +24,10 @@ public class JwtAuth implements Authentication {
     private Map<String, Claim> claims;
 
     private String email;
+
+    public static JwtAuth unauthenticated() {
+        return new JwtAuth(false, null, null);
+    }
 
     @Override
     public boolean isAuthenticated() {

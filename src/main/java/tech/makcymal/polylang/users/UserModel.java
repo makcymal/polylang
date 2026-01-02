@@ -8,7 +8,6 @@ import tech.makcymal.polylang.languages.Language;
 import tech.makcymal.polylang.languages.StudiedLanguageDto;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -16,7 +15,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserModel {
 
-    private UUID id;
+    private Integer id;
 
     private String email;
 

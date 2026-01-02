@@ -3,7 +3,9 @@ package tech.makcymal.polylang.security.filter_chain;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.filter.OncePerRequestFilter;
 import tech.makcymal.polylang.security.JwtService;
+import tech.makcymal.polylang.security.context.JwtAuth;
 import tech.makcymal.polylang.security.context.JwtAuthHolder;
 import tech.makcymal.polylang.security.exceptions.AuthException;
 import org.springframework.http.HttpStatus;
@@ -23,28 +25,16 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthFilter extends GenericFilterBean {
+public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtAuthHolder authHolder;
     private final ExceptionalEntryPoint exceptionalEntryPoint;
     private final JwtService jwtService;
 
     @Override
-    public void doFilter(
-            ServletRequest request,
-            ServletResponse response,
-            FilterChain filterChain
-    ) throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-        doFilter(httpRequest, httpResponse, filterChain);
-    }
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-    void doFilter(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws IOException, ServletException {
         try {
             String value = jwtService.getJwtValueFromRequest(request);
             if (value != null) {
