@@ -25,7 +25,8 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig {
 
     private final String[] allowedUrls = new String[]{
-        "/users/**"
+        // "/users/**"
+        "/**"
     };
 
     private final JwtAuthFilter jwtAuthFilter;

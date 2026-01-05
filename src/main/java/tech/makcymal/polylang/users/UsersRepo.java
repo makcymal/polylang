@@ -8,9 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UsersRepo extends JpaRepository<UserEntity, Integer> {
+public interface UsersRepo extends JpaRepository<UserEntity, UUID> {
 
     boolean existsByEmail(String email);
 

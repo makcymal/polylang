@@ -1,10 +1,10 @@
-package tech.makcymal.polylang.speaking.transcribe;
+package tech.makcymal.polylang.talks.transcribe;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tech.makcymal.polylang.speaking.SpeakingProperties;
-import tech.makcymal.polylang.speaking.transcribe.models.Request;
+import tech.makcymal.polylang.talks.TalksProperties;
+import tech.makcymal.polylang.talks.transcribe.models.Request;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class RequestSet {
     private final List<List<Request>> requests = new ArrayList<>();
     private final int snippetDuration;
 
-    public RequestSet(@NonNull SpeakingProperties speakingProps) {
+    public RequestSet(@NonNull TalksProperties speakingProps) {
         snippetDuration = (int) speakingProps.getTranscribeBySnippetsOfDuration().getSeconds();
     }
 

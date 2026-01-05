@@ -28,4 +28,9 @@ public class SecurityProperties {
     @NotNull
     private Duration emailConfirmationCodeValidity;
 
+    private boolean cookiesAttrSecure;
+
+    @NotNull
+    private String cookiesAttrSameSite;
+
 }

@@ -204,13 +204,13 @@ public class UsersService {
         UUID refreshJti = UUID.randomUUID();
         UUID accessJti = UUID.randomUUID();
         issueRefreshJwt(user.getId(), accessJti, refreshJti);
-        String accessJwt = issueAccessJwt(accessJti, user.getEmail());
+        String accessJwt = issueAccessJwt(accessJti, user.getId());
 
         session.setAccessJwt(accessJwt);
         session.setRefreshJti(refreshJti);
     }
 
-    void issueRefreshJwt(int userId, UUID accessJti, UUID refreshJti) {
+    void issueRefreshJwt(UUID userId, UUID accessJti, UUID refreshJti) {
         refreshTokensRepo.deleteAllByUserId(userId);
 
         ZonedDateTime now = ZonedDateTime.now();
@@ -224,8 +224,8 @@ public class UsersService {
         refreshTokensRepo.save(entity);
     }
 
-    String issueAccessJwt(UUID jti, String userEmail) {
-        return jwtService.issueJwt(jti, userEmail, securityProps.getAccessTokenValidity());
+    String issueAccessJwt(UUID jti, UUID userId) {
+        return jwtService.issueJwt(jti, userId.toString(), securityProps.getAccessTokenValidity());
     }
 
     UserEntity registerRequestToEntity(RegisterRequest request) {
@@ -233,6 +233,7 @@ public class UsersService {
         ZonedDateTime now = ZonedDateTime.now();
 
         return UserEntity.builder()
+                .id(UUID.randomUUID())
                 .email(request.getEmail())
                 .emailConfirmed(false)
                 .username(request.getUsername())

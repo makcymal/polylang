@@ -7,13 +7,15 @@ import lombok.Data;
 import tech.makcymal.polylang.languages.Language;
 import tech.makcymal.polylang.languages.LanguageLevel;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TextDto {
 
-    private Integer id;
+    private UUID id;
 
     private String content;
 

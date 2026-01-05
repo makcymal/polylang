@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { LIGHT, type Theme } from '@/types/Theme.ts';
-import { AudioRecorder } from '@/utils/AudioRecorder.ts';
-import { getRandomText } from '@/api/TextService.ts';
+import {useEffect, useRef, useState} from 'react';
+import {LIGHT, type Theme} from '@/types/Theme.ts';
+import {SpeechRecorder} from '@/utils/SpeechRecorder.ts';
+import {getRandomText} from '@/api/TextsService.ts';
 import TextPanel from '@/components/TextPanel.tsx';
 import '@/widgets/Gym.css';
+import {getNewTalkId, sendRecordChunk} from "@/api/TalksService.ts";
+import type {RecordChunk} from "@/types/RecordChunk.ts";
 
 const textToTranslateTitle = 'Текст для перевода';
 const textToTranslateExample =
@@ -15,14 +17,32 @@ const transcribedTranslationHint = 'Текст можно редактирова
 
 const translationAnalysisPlaceholder = 'Здесь будет анализ вашего перевода';
 
-interface GymProps {
+interface Props {
     theme: Theme;
 }
 
-export const Gym = ({ theme }: GymProps) => {
+export const Gym = ({theme}: Props) => {
     const [textToTranslate, setTextToTranslate] = useState(textToTranslateExample);
 
-    const recorder = useRef(new AudioRecorder((data: ArrayBuffer) => console.log('recorded', data)));
+    const talkId = useRef<string | null>(null);
+
+    const sendRecord = (chunk: RecordChunk) => {
+        if (!talkId.current) {
+            getNewTalkId()
+                .then(id => {
+                    talkId.current = id
+                })
+                .catch(err => {
+                    console.error(err)
+                });
+        }
+        if (talkId.current) {
+            void sendRecordChunk(talkId.current, chunk);
+        }
+    }
+
+    // eslint-disable-next-line react-hooks/refs
+    const recorder = useRef(new SpeechRecorder(sendRecord));
     const [isRecording, setIsRecording] = useState(false);
 
     const timerDescriptor = useRef<number | null>(null);
@@ -32,16 +52,17 @@ export const Gym = ({ theme }: GymProps) => {
     const [transcribedRecord, setTranscribedRecord] = useState('');
     const [translationAnalysis, setTranslationAnalysis] = useState('');
 
+
     const exploreTextsToTranslate = () => {
         /* empty */
     };
 
     const getTextToTranslate = () => {
         void getRandomText()
-            .then((response) => {
-                setTextToTranslate(response.data.content);
+            .then(text => {
+                setTextToTranslate(text.content);
             })
-            .catch((err) => {
+            .catch(err => {
                 console.error(err);
             });
     };
@@ -54,7 +75,6 @@ export const Gym = ({ theme }: GymProps) => {
         if (_is_recording) {
             timerDescriptor.current = setInterval(() => {
                 timerSeconds.current += 1;
-                console.log(timerSeconds);
                 setTimerFormatted(getTimerFormatted());
             }, 1000);
         } else {
@@ -105,8 +125,8 @@ export const Gym = ({ theme }: GymProps) => {
                                         ? '/micro.red-on-white.png'
                                         : '/micro.black-on-white.png'
                                     : isRecording
-                                      ? '/micro.red-on-black.png'
-                                      : '/micro.yellow-on-black.png'
+                                        ? '/micro.red-on-black.png'
+                                        : '/micro.yellow-on-black.png'
                             }
                             className="toggle-recording-icon"
                         />
@@ -118,7 +138,7 @@ export const Gym = ({ theme }: GymProps) => {
 
             <div className="translation-contents">
                 <div className="text-to-translate-wr">
-                    <TextPanel title={textToTranslateTitle} text={textToTranslate} isEditable={false} />
+                    <TextPanel title={textToTranslateTitle} text={textToTranslate} isEditable={false}/>
                 </div>
                 <div className="transcribed-translation-wr">
                     <TextPanel
@@ -138,7 +158,7 @@ export const Gym = ({ theme }: GymProps) => {
                         Анализировать перевод
                     </button>
                 </div>
-                <TextPanel text={translationAnalysis} placeholder={translationAnalysisPlaceholder} />
+                <TextPanel text={translationAnalysis} placeholder={translationAnalysisPlaceholder}/>
             </div>
         </main>
     );

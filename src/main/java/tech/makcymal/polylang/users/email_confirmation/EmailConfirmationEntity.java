@@ -3,9 +3,7 @@ package tech.makcymal.polylang.users.email_confirmation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import tech.makcymal.polylang.common.AbstractEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

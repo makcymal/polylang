@@ -211,10 +211,10 @@ public class UsersController {
 
     void setCurrentUserCookie(HttpHeaders headers, UserModel userModel) {
         ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, SerdeUtils.serializeInBase64(userModel))
-                .secure(true)
                 .httpOnly(false)
-                .sameSite("Strict")
-                .path("/never-sent")
+                .secure(securityProps.isCookiesAttrSecure())
+                .sameSite(securityProps.getCookiesAttrSameSite())
+                .path("/")
                 .maxAge(securityProps.getRefreshTokenValidity())
                 .build();
         headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -222,7 +222,7 @@ public class UsersController {
 
     void deleteCurrentUserCookie(HttpHeaders headers) {
         ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, null)
-                .path("/never-sent")
+                .path("/")
                 .maxAge(0)
                 .build();
         headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -230,9 +230,9 @@ public class UsersController {
 
     void setEmailConfirmationCodeIdCookie(HttpHeaders headers, UUID emailConfirmationCodeId) {
         ResponseCookie cookie = ResponseCookie.from(EMAIL_CONFIRMATION_CODE_ID_COOKIE, emailConfirmationCodeId.toString())
-                .secure(true)
                 .httpOnly(true)
-                .sameSite("Strict")
+                .secure(securityProps.isCookiesAttrSecure())
+                .sameSite(securityProps.getCookiesAttrSameSite())
                 .path("/users/confirm")
                 .maxAge(securityProps.getEmailConfirmationCodeValidity())
                 .build();
@@ -249,9 +249,9 @@ public class UsersController {
 
     void setAccessJwtCookie(HttpHeaders headers, String value) {
         ResponseCookie cookie = ResponseCookie.from(ACCESS_JWT_COOKIE, value)
-                .secure(true)
                 .httpOnly(true)
-                .sameSite("Strict")
+                .secure(securityProps.isCookiesAttrSecure())
+                .sameSite(securityProps.getCookiesAttrSameSite())
                 .path("/")
                 .maxAge(securityProps.getAccessTokenValidity())
                 .build();
@@ -268,16 +268,16 @@ public class UsersController {
 
     void setRefreshJtiCookie(HttpHeaders headers, UUID jti) {
         ResponseCookie refreshCookie = ResponseCookie.from(REFRESH_JTI_COOKIE, jti.toString())
-                .secure(true)
                 .httpOnly(true)
-                .sameSite("Strict")
+                .secure(securityProps.isCookiesAttrSecure())
+                .sameSite(securityProps.getCookiesAttrSameSite())
                 .path("/users/refresh")
                 .maxAge(securityProps.getRefreshTokenValidity())
                 .build();
         ResponseCookie logoutCookie = ResponseCookie.from(LOGOUT_JTI_COOKIE, jti.toString())
-                .secure(true)
                 .httpOnly(true)
-                .sameSite("Strict")
+                .secure(securityProps.isCookiesAttrSecure())
+                .sameSite(securityProps.getCookiesAttrSameSite())
                 .path("/users/logout")
                 .maxAge(securityProps.getRefreshTokenValidity())
                 .build();

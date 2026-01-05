@@ -1,28 +1,30 @@
-package tech.makcymal.polylang.speaking;
+package tech.makcymal.polylang.talks;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import tech.makcymal.polylang.common.AbstractEntity;
 import tech.makcymal.polylang.texts.TextEntity;
 import tech.makcymal.polylang.users.UserEntity;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@Entity(name = "speaking")
-public class SpeakingEntity extends AbstractEntity {
+@Entity(name = "talks")
+public class TalkEntity {
+
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

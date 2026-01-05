@@ -4,17 +4,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
-public interface TextsRepo extends JpaRepository<TextEntity, Integer> {
+public interface TextsRepo extends JpaRepository<TextEntity, UUID> {
 
     @Query(value =
             """
             SELECT *
             FROM texts
-            WHERE id = (SELECT MAX(id)
-                        FROM texts
-                        WHERE id <= (SELECT MIN(id) + ROUND(RANDOM() * (MAX(id) - MIN(id)))
-                                     FROM TEXTS))
+            ORDER BY RANDOM()
+            LIMIT 1
             """,
            nativeQuery = true
     )

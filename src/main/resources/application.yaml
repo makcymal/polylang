@@ -41,8 +41,10 @@ security:
   access-token-validity: ${ACCESS_TOKEN_VALIDITY}
   refresh-token-validity: ${REFRESH_TOKEN_VALIDITY}
   email-confirmation-code-validity: ${EMAIL_CONFIRMATION_CODE_VALIDITY}
+  cookies-attr-secure: ${COOKIES_ATTR_SECURE}
+  cookies-attr-same-site: ${COOKIES_ATTR_SAME_SITE}
 
-speaking:
+talks:
   speech-records-dir: ${SPEECH_RECORDS_DIR}
   speech-transcriptions-dir: ${SPEECH_TRANSCRIPTIONS_DIR}
   transcribe-by-snippets-of-duration: ${TRANSCRIBE_BY_SNIPPETS_OF_DURATION}

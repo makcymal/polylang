@@ -24,8 +24,10 @@ security:
   access-token-validity: PT10M
   refresh-token-validity: PT24H
   email-confirmation-code-validity: PT24H
+  cookies-attr-secure: false
+  cookies-attr-same-site: 'Lax'
 
-speaking:
+talks:
   speech-records-dir: /app/speech-records
   speech-transcriptions-dir: /app/speech-transcriptions
   transcribe-by-snippets-of-duration: PT15S

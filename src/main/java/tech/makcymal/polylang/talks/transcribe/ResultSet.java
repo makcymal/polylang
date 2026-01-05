@@ -1,17 +1,13 @@
-package tech.makcymal.polylang.speaking.transcribe;
+package tech.makcymal.polylang.talks.transcribe;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tech.makcymal.polylang.speaking.SpeakingProperties;
-import tech.makcymal.polylang.speaking.transcribe.models.Response;
-import tech.makcymal.polylang.speaking.transcribe.models.Result;
+import tech.makcymal.polylang.talks.TalksProperties;
+import tech.makcymal.polylang.talks.transcribe.models.Result;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -23,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 @RequiredArgsConstructor
 public class ResultSet {
 
-    private final SpeakingProperties speakingProps;
+    private final TalksProperties speakingProps;
 
     private final Map<String, CompletableFuture<Result>> results = new ConcurrentHashMap<>();
 

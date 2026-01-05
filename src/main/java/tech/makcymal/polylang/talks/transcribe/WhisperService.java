@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.speaking.transcribe;
+package tech.makcymal.polylang.talks.transcribe;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -7,10 +7,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import tech.makcymal.polylang.common.NamingThreadFactory;
 import tech.makcymal.polylang.common.SystemUtils;
-import tech.makcymal.polylang.speaking.SpeakingProperties;
-import tech.makcymal.polylang.speaking.transcribe.models.Request;
-import tech.makcymal.polylang.speaking.transcribe.models.Response;
-import tech.makcymal.polylang.speaking.transcribe.models.Result;
+import tech.makcymal.polylang.talks.TalksProperties;
+import tech.makcymal.polylang.talks.transcribe.models.Request;
+import tech.makcymal.polylang.talks.transcribe.models.Response;
+import tech.makcymal.polylang.talks.transcribe.models.Result;
 
 import jakarta.annotation.PostConstruct;
 import java.nio.file.Paths;
@@ -19,15 +19,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.stream.IntStream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WhisperService {
 
-    private final SpeakingProperties speakingProps;
+    private final TalksProperties speakingProps;
     private final RequestSet requests;
     private final ResultSet results;
 
@@ -73,7 +71,7 @@ public class WhisperService {
         return result;
     }
 
-    @Scheduled(fixedRateString = "${speaking.transcribe-by-snippets-of-duration}")
+    @Scheduled(fixedRateString = "${talks.transcribe-by-snippets-of-duration}")
     private void scheduleTranscription() {
         // log.info("Running WhisperService.scheduleTranscription...");
 

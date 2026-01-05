@@ -3,9 +3,7 @@ package tech.makcymal.polylang.texts;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import tech.makcymal.polylang.common.AbstractEntity;
 import tech.makcymal.polylang.languages.Language;
 import tech.makcymal.polylang.languages.LanguageLevel;
 import org.hibernate.annotations.ColumnTransformer;
@@ -13,14 +11,18 @@ import org.hibernate.annotations.ColumnTransformer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity(name = "texts")
-public class TextEntity extends AbstractEntity {
+public class TextEntity {
+
+    @Id
+    private UUID id;
 
     private String content;
 

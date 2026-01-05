@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.speaking.transcribe.models;
+package tech.makcymal.polylang.talks.transcribe.models;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -9,12 +9,10 @@ import java.util.UUID;
 
 public interface RefreshTokensRepo extends JpaRepository<RefreshTokenEntity, UUID> {
 
-    Optional<RefreshTokenEntity> findByJti(UUID jti);
-
     Optional<RefreshTokenEntity> findByJtiAndExpiresAtAfter(UUID jti, ZonedDateTime expiresAtAfter);
 
     @Transactional
-    void deleteAllByUserId(int userId);
+    void deleteAllByUserId(UUID userId);
 
     @Transactional
     void deleteByJti(UUID jti);
