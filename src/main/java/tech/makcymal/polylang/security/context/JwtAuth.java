@@ -1,6 +1,5 @@
 package tech.makcymal.polylang.security.context;
 
-import com.auth0.jwt.interfaces.Claim;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,23 +10,17 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 public class JwtAuth implements Authentication {
 
+    @Setter
     private boolean authenticated;
 
-    private Map<String, Claim> claims;
-
-    private String email;
-
-    public static JwtAuth unauthenticated() {
-        return new JwtAuth(false, null, null);
-    }
+    private UUID userId;
 
     @Override
     public boolean isAuthenticated() {
@@ -36,17 +29,17 @@ public class JwtAuth implements Authentication {
 
     @Override
     public Object getDetails() {
-        return claims;
+        return null;
     }
 
     @Override
     public @Nullable Object getPrincipal() {
-        return email;
+        return userId;
     }
 
     @Override
     public String getName() {
-        return email;
+        return null;
     }
 
     @Override

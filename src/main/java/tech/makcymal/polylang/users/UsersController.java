@@ -210,7 +210,7 @@ public class UsersController {
     }
 
     void setCurrentUserCookie(HttpHeaders headers, UserModel userModel) {
-        ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, SerdeUtils.serializeInBase64(userModel))
+        ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, SerdeUtils.intoBase64Json(userModel))
                 .httpOnly(false)
                 .secure(securityProps.isCookiesAttrSecure())
                 .sameSite(securityProps.getCookiesAttrSameSite())

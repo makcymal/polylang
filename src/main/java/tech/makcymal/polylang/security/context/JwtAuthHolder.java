@@ -12,11 +12,12 @@ import java.util.Optional;
 @Component
 public class JwtAuthHolder {
 
-    public Authentication get() {
+    public JwtAuth get() {
         SecurityContext ctx = SecurityContextHolder.getContext();
-        Authentication auth = Optional.of(ctx)
-            .map(SecurityContext::getAuthentication)
-            .orElse(null);
+        JwtAuth auth = Optional.of(ctx)
+                .map(SecurityContext::getAuthentication)
+                .map(JwtAuth.class::cast)
+                .orElse(null);
         return auth;
     }
 

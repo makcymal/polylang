@@ -10,12 +10,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tech.makcymal.polylang.security.filter_chain.ExceptionalEntryPoint;
 import tech.makcymal.polylang.security.filter_chain.JwtAuthFilter;
 
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Slf4j
 @Configuration
@@ -25,27 +25,27 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig {
 
     private final String[] allowedUrls = new String[]{
-        // "/users/**"
-        "/**"
+        "/users/**",
+        "/texts/random",
+        "/error"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
     private final ExceptionalEntryPoint exceptionalEntryPoint;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) {
-        return httpSecurity.cors(customizer -> {})
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(c -> c
-                    .sessionCreationPolicy(STATELESS))
-            .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
-            .authorizeHttpRequests(c -> c
-                    .requestMatchers(allowedUrls).permitAll()
-                    .anyRequest().authenticated())
-            .exceptionHandling(c -> c
-                    .authenticationEntryPoint(exceptionalEntryPoint))
-            .build();
-    }
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity httpSecurity) {
+    return httpSecurity.cors(customizer -> {})
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .authorizeHttpRequests(c -> c
+                .requestMatchers(allowedUrls).permitAll()
+                .anyRequest().authenticated())
+        .exceptionHandling(c -> c
+                .authenticationEntryPoint(exceptionalEntryPoint))
+        .build();
+}
 
     @Bean
     public AuthenticationManager noopAuthenticationManager() {

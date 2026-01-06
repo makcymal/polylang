@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ExceptionalEntryPoint implements AuthenticationEntryPoint {
 
     @Override

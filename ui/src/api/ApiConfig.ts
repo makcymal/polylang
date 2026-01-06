@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import axios, {type AxiosError, type AxiosInstance, type AxiosRequestConfig} from 'axios';
 
 const BASE_URL = 'localhost:3232/';
 
@@ -11,16 +11,38 @@ const axiosConfig: AxiosRequestConfig = {
     withCredentials: true,
 };
 
-let _http: AxiosInstance | null = null;
+export const apiClient: AxiosInstance = axios.create(axiosConfig);
 
-export const http = (): AxiosInstance => {
-    _http ??= axios.create(axiosConfig);
-    return _http;
-}
+// let isRefreshing = false;
 
-let _ws: WebSocket | null = null;
-
-export const ws = (): WebSocket => {
-    _ws ??= new WebSocket('ws://' + BASE_URL);
-    return _ws;
-}
+// apiClient.interceptors.response.use(
+//     response => response,
+//     async (error: AxiosError) => {
+//         const originalRequest = error.config as AxiosRequestConfig & {
+//             _retry?: boolean;
+//         };
+//
+//         if (
+//             error.response?.status === 401 &&
+//             !originalRequest._retry &&
+//             !originalRequest.url?.includes('/users/login')
+//         ) {
+//             originalRequest._retry = true;
+//
+//             try {
+//                 if (!isRefreshing) {
+//                     isRefreshing = true;
+//                     await apiClient.post('/users/refresh');
+//                     isRefreshing = false;
+//                 }
+//
+//                 return apiClient(originalRequest);
+//             } catch (refreshError) {
+//                 isRefreshing = false;
+//                 return Promise.reject(refreshError);
+//             }
+//         }
+//
+//         return Promise.reject(error);
+//     }
+// );

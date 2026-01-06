@@ -11,7 +11,7 @@ spring:
     name: polylang
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${POSTGRES_URL}/${POSTGRES_DB}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5454}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   jpa:
@@ -37,7 +37,7 @@ springdoc:
 
 security:
   public-key: ${PUBLIC_KEY}
-  private-key: ${REFRESH_KEY}
+  private-key: ${PRIVATE_KEY}
   access-token-validity: ${ACCESS_TOKEN_VALIDITY}
   refresh-token-validity: ${REFRESH_TOKEN_VALIDITY}
   email-confirmation-code-validity: ${EMAIL_CONFIRMATION_CODE_VALIDITY}
@@ -45,13 +45,15 @@ security:
   cookies-attr-same-site: ${COOKIES_ATTR_SAME_SITE}
 
 talks:
-  speech-records-dir: ${SPEECH_RECORDS_DIR}
-  speech-transcriptions-dir: ${SPEECH_TRANSCRIPTIONS_DIR}
-  transcribe-by-snippets-of-duration: ${TRANSCRIBE_BY_SNIPPETS_OF_DURATION}
+  records-dir: ${RECORDS_DIR}
+  transcriptions-dir: ${TRANSCRIPTIONS_DIR}
   whisper-path: ${WHISPER_PATH}
   whisper-model: ${WHISPER_MODEL}
   whisper-models-dir: ${WHISPER_MODELS_DIR}
-  whisper-thread-pool-size: ${WHISPER_THREAD_POOL_SIZE}
-  waiting-whisper-response-timeout: ${WAITING_WHISPER_RESPONSE_TIMEOUT}
+  whisper-response-timeout: ${WHISPER_RESPONSE_TIMEOUT}
+  transcribing-thread-pool-size: ${TRANSCRIBING_THREAD_POOL_SIZE}
+  transcription-processing-thread-pool-size: ${TRANSCRIPTION_PROCESSING_THREAD_POOL_SIZE}
+  transcription-saving-thread-pool-size: ${TRANSCRIPTION_SAVING_THREAD_POOL_SIZE}
+  transcribing-period: ${TRANSCRIBING_PERIOD}
   detect-silence-by-no-speech-prob-threshold: ${DETECT_SILENCE_BY_NO_SPEECH_PROB_THRESHOLD}
   silence-timeout-to-stop-recording: ${SILENCE_TIMEOUT_TO_STOP_RECORDING}

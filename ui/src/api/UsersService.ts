@@ -1,25 +1,25 @@
 import type {CheckUserExistsResponse} from "@/types/users/CheckUserExistsResponse.ts";
-import {http} from "@/api/ApiConfig.ts";
+import {apiClient} from "@/api/ApiConfig.ts";
 import type {RegisterRequest} from "@/types/users/RegisterRequest.ts";
 import type {ConfirmEmailRequest} from "@/types/users/ConfirmEmailRequest.ts";
 import type {LoginRequest} from "@/types/users/LoginRequest.ts";
 
 export const checkUserExists = async (emailOrUsername: string): Promise<CheckUserExistsResponse> => {
-    return await http().get<CheckUserExistsResponse>(`/users/check-if-exists/${emailOrUsername}`).then(resp => resp.data);
+    return await apiClient.get<CheckUserExistsResponse>(`/users/check-if-exists/${emailOrUsername}`).then(resp => resp.data);
 }
 
 export const registerUser = async (request: RegisterRequest): Promise<void> => {
-    await http().post<void>('/users/register', request);
+    await apiClient.post<void>('/users/register', request);
 }
 
 export const confirmEmail = async (request: ConfirmEmailRequest): Promise<void> => {
-    await http().put<void>('/users/confirm', request);
+    await apiClient.put<void>('/users/confirm', request);
 }
 
 export const doLogin = async (request: LoginRequest): Promise<void> => {
-    await http().post<void>('/users/login', request);
+    await apiClient.post<void>('/users/login', request);
 }
 
 export const doLogout = async (): Promise<void> => {
-    await http().post<void>('/users/logout');
+    await apiClient.post<void>('/users/logout');
 }

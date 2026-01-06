@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import tech.makcymal.polylang.security.context.AlgorithmContext;
 import tech.makcymal.polylang.security.context.JwtAuth;
 import tech.makcymal.polylang.security.exceptions.BadTokenException;
@@ -67,11 +68,10 @@ public class JwtService {
         return jwt;
     }
 
-    public JwtAuth getAuthFromDecodedJwt(DecodedJWT jwt) {
+    public Authentication getAuthFromDecodedJwt(DecodedJWT jwt) {
         JwtAuth auth = JwtAuth.builder()
                 .authenticated(true)
-                .claims(jwt.getClaims())
-                .email(jwt.getSubject())
+                .userId(UUID.fromString(jwt.getSubject()))
                 .build();
 
         return auth;

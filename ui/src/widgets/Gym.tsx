@@ -4,15 +4,12 @@ import {SpeechRecorder} from '@/utils/SpeechRecorder.ts';
 import {getRandomText} from '@/api/TextsService.ts';
 import TextPanel from '@/components/TextPanel.tsx';
 import '@/widgets/Gym.css';
-import {getNewTalkId, sendRecordChunk} from "@/api/TalksService.ts";
-import type {RecordChunk} from "@/types/RecordChunk.ts";
+import {getNewTalkId, getTalkTranscription, appendRecordChunk} from "@/api/TalksService.ts";
+import type {Text} from "@/types/Text.ts"
 
 const textToTranslateTitle = 'Текст для перевода';
-const textToTranslateExample =
-    'Он задумался о том, как быстрее заговорить на английском без страха, и решил практиковать устный перевод вслух';
 
 const transcribedTranslationTitle = 'Ваш перевод';
-const transcribedTranslationPlaceholder = '—';
 const transcribedTranslationHint = 'Текст можно редактировать';
 
 const translationAnalysisPlaceholder = 'Здесь будет анализ вашего перевода';
@@ -22,50 +19,42 @@ interface Props {
 }
 
 export const Gym = ({theme}: Props) => {
-    const [textToTranslate, setTextToTranslate] = useState(textToTranslateExample);
+    const [textToTranslate, setTextToTranslate] = useState<Text>({
+        id: '',
+        content: '',
+        language: 'RUSSIAN',
+        intendedLevel: 'A1'
+    });
 
+    const textId = useRef<string | null>(null);
     const talkId = useRef<string | null>(null);
 
-    const sendRecord = (chunk: RecordChunk) => {
+    const processRecordChunk = async (chunk: Blob, start: number): Promise<void> => {
+        console.log(chunk, start);
         if (!talkId.current) {
-            getNewTalkId()
-                .then(id => {
-                    talkId.current = id
-                })
-                .catch(err => {
-                    console.error(err)
-                });
+            if (textId.current) {
+                await getNewTalkId(textId.current)
+                    .then(id => talkId.current = id)
+                    .catch(e => console.error(e));
+            }
         }
         if (talkId.current) {
-            void sendRecordChunk(talkId.current, chunk);
+            void appendRecordChunk(talkId.current, start, chunk);
         }
     }
 
     // eslint-disable-next-line react-hooks/refs
-    const recorder = useRef(new SpeechRecorder(sendRecord));
+    const recorder = useRef(new SpeechRecorder(processRecordChunk));
     const [isRecording, setIsRecording] = useState(false);
 
     const timerDescriptor = useRef<number | null>(null);
     const timerSeconds = useRef(0);
     const [timerFormatted, setTimerFormatted] = useState('00:00');
 
+    const transcribeDescriptor = useRef<number | null>(null);
     const [transcribedRecord, setTranscribedRecord] = useState('');
     const [translationAnalysis, setTranslationAnalysis] = useState('');
 
-
-    const exploreTextsToTranslate = () => {
-        /* empty */
-    };
-
-    const getTextToTranslate = () => {
-        void getRandomText()
-            .then(text => {
-                setTextToTranslate(text.content);
-            })
-            .catch(err => {
-                console.error(err);
-            });
-    };
 
     const toggleRecording = () => {
         const _is_recording = recorder.current.toggle();
@@ -77,6 +66,12 @@ export const Gym = ({theme}: Props) => {
                 timerSeconds.current += 1;
                 setTimerFormatted(getTimerFormatted());
             }, 1000);
+            transcribeDescriptor.current = setInterval(async () => {
+                if (talkId.current) {
+                    const transcription = await getTalkTranscription(talkId.current);
+                    setTranscribedRecord(transcription);
+                }
+            }, 2000);
         } else {
             if (timerDescriptor.current) {
                 clearInterval(timerDescriptor.current);
@@ -94,8 +89,16 @@ export const Gym = ({theme}: Props) => {
     };
 
     useEffect(() => {
-        getTextToTranslate();
+        const fetchTextToTranslate = async () => {
+            const text = await getRandomText();
+            setTextToTranslate(text);
+        }
+        void fetchTextToTranslate();
     }, []);
+
+    useEffect(() => {
+        textId.current = textToTranslate.id
+    }, [textToTranslate]);
 
     const analyzeTranslation = () => {
         setTranslationAnalysis('Пока это заглушка. После отправки перевода здесь появится анализ и подсказки');
@@ -105,7 +108,7 @@ export const Gym = ({theme}: Props) => {
         <main className="gym">
             <div className="translation-controls">
                 <div className="button-with-hint">
-                    <button className="cta translation-button" onClick={exploreTextsToTranslate} type="button">
+                    <button className="cta translation-button" type="button">
                         <img
                             alt={'Выбрать текст для перевода'}
                             src={theme === LIGHT ? '/compass.black.png' : '/compass.white.png'}
@@ -138,7 +141,7 @@ export const Gym = ({theme}: Props) => {
 
             <div className="translation-contents">
                 <div className="text-to-translate-wr">
-                    <TextPanel title={textToTranslateTitle} text={textToTranslate} isEditable={false}/>
+                    <TextPanel title={textToTranslateTitle} text={textToTranslate.content} isEditable={false}/>
                 </div>
                 <div className="transcribed-translation-wr">
                     <TextPanel
@@ -146,7 +149,7 @@ export const Gym = ({theme}: Props) => {
                         text={transcribedRecord}
                         isEditable={true}
                         onTextEdit={setTranscribedRecord}
-                        placeholder={transcribedTranslationPlaceholder}
+                        placeholder='—'
                         hint={transcribedTranslationHint}
                     />
                 </div>

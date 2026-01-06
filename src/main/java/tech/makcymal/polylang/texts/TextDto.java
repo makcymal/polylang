@@ -16,11 +16,8 @@ import java.util.UUID;
 public class TextDto {
 
     private UUID id;
-
     private String content;
-
     private Language language;
-
     private LanguageLevel intendedLevel;
 
 }

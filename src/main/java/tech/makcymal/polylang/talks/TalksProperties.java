@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-import tech.makcymal.polylang.talks.transcribe.models.Model;
+import tech.makcymal.polylang.talks.transcription.WhisperModel;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
@@ -16,27 +16,29 @@ import java.time.Duration;
 public class TalksProperties {
 
     @NotNull
-    private String speechRecordsDir;
+    private String recordsDir;
 
     @NotNull
-    private String speechTranscriptionsDir;
-
-    @NotNull
-    private Duration transcribeBySnippetsOfDuration;
+    private String transcriptionsDir;
 
     @NotNull
     private String whisperPath;
 
     @NotNull
-    private Model whisperModel;
+    private WhisperModel whisperModel;
 
     @NotNull
     private String whisperModelsDir;
 
-    private int whisperThreadPoolSize;
+    @NotNull
+    private Duration whisperResponseTimeout;
+
+    private int transcribingThreadPoolSize;
+    private int transcriptionProcessingThreadPoolSize;
+    private int transcriptionSavingThreadPoolSize;
 
     @NotNull
-    private Duration waitingWhisperResponseTimeout;
+    private Duration transcribingPeriod;
 
     private float detectSilenceByNoSpeechProbThreshold;
 

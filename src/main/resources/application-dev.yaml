@@ -21,20 +21,22 @@ security:
   public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo+eFKMLIUl0LR1k9dUsihco/E7GN4LlODeaot/7W6a86FyTI0JtI1120EC+OW/lnuCVRQ0Uil8WARuN2yDCN0A2U/LME0GTns8xvbWpxpMN1injF4ys8hoXHNIL9ZqS3hzKK+Fu05iPtQ0grUz9vVuOJZXk3AoN5esmsyoy41DOBlwiQ8iZSQZlBZ07RNtl8an7Ujhumd32D3x9IMIsyspyEPzKuHwlOMJKqjeNF2FiiJJh8qkaKEg/Gep/n1zOrbkg2vs+qC8Tv5dB8U5k5J7SLdYQbUNWSNyf7Ert5Q8jkNzP3cODXishuuVgYJRN72Jw//a1wE6YOrOc+ErCwlQIDAQAB
   private-key: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCj54UowshSXQtHWT11SyKFyj8TsY3guU4N5qi3/tbprzoXJMjQm0jXXbQQL45b+We4JVFDRSKXxYBG43bIMI3QDZT8swTQZOezzG9tanGkw3WKeMXjKzyGhcc0gv1mpLeHMor4W7TmI+1DSCtTP29W44lleTcCg3l6yazKjLjUM4GXCJDyJlJBmUFnTtE22XxqftSOG6Z3fYPfH0gwizKynIQ/Mq4fCU4wkqqN40XYWKIkmHyqRooSD8Z6n+fXM6tuSDa+z6oLxO/l0HxTmTkntIt1hBtQ1ZI3J/sSu3lDyOQ3M/dw4NeKyG65WBglE3vYnD/9rXATpg6s5z4SsLCVAgMBAAECggEAIW0mgXUT8IQsOC1RdNnRXRKtgYEs658u9XPMhdWxk6/aO30TfUOl+9IO1lw0frpi9jGaHIt9bhFnw01BXLtWOI+EinKh8TQa8tanBNv3+D+qeYZ+6QDY06B1y1ZJgoTmLurWX6coQeUizp1pxI0D0mcODsVFPDx+6lU16YsAaLoSR20ub3+l7wkMoD2WagEwfkiFE8PVJ/xCY/bwdS/LXiUqynipdErDA+uncaH58eqKzGH0b4fhbVYAD1qcSCkzsEwUVyeq78bjcKr1jE1aka+uNxxHo2rWtn+VAwB625LQM6KO0JhSv7FxSwlgasmaS7XjHa/kPq804+qS+kCOoQKBgQDlQaPDY4G79nR0Q7U1aFB3ai5xbpDMgUwP584AIZGI4jc6D/5xX2Z4WdfOlyE2soQCTOcT66ZXij103XkKcuMLsQ8qCAHfcs5W568VE2mO7c43jk0LtIM7xv5NahbmwbskN/kJXrKNHD4ES74jm7Eqc8BF/Ax1XrHSmmXj1tydZQKBgQC3BkBFDeO4In/ulepUTcz1RFQxIFk8Kqqmpv1hOWLw7HSOe/HSrP7L3aGxmYwyfROKXO53ISCujBWs07e7XpkMHvMu/rAZ7ItQJlYSdiJ9VqeDyDb6xvBzH8JVeRzmK7b37VN1FUppWIAmSfZm4bOpmcv+/pfCEVCGmOruIg5rcQKBgEdJyP2qBJ6JPZ8lqsSHwnXPm8+D/RzKm/daMpGR3qp9BYVVkd55Nuj3rwa7sgVLL4dzmGt2XIxeHUwozkm0feuVzExanxJ3pbgaZTQdjDZ4tiZKZqTcJe7BqzQxaBurZGEX0qXaP5VnkdVOJDr4X/f+dGyOuuUIZC1D+6kEmCeNAoGBAI/DEzyqmlKKlt67VyL9MZ7+GvuzoyRFh2H8DU8PGo6PzUYWSW7ogAN2hYnRSHRoFq86K/3bQaaZVnU4oDtHJQSGUxJ4766NRSih1D4QGStGo7I51CXLmhdzvNwSlAagE8pO2p0/KgHxiEeLFUbexpbTvY8AQAgqPYxcFT0T9yuhAoGBANnDEY9tbIPUN4iAa9HGxkIf7AGR9mv8zrGy3hsbjpbf4QnYXVUZg7mai4v1aRvi+MD4pw6O1dmwaURqOmFON7G6vNW9GYzQwynrurXEv75tITw6+tB/q0PtWXebc/k9qNK1txUVK75a0PdmCwsmWB9M7/fI2P5g6eCNfRgssdBW
 
-  access-token-validity: PT10M
+  access-token-validity: PT10H
   refresh-token-validity: PT24H
   email-confirmation-code-validity: PT24H
   cookies-attr-secure: false
   cookies-attr-same-site: 'Lax'
 
 talks:
-  speech-records-dir: /app/speech-records
-  speech-transcriptions-dir: /app/speech-transcriptions
-  transcribe-by-snippets-of-duration: PT15S
+  records-dir: /app/talk-records
+  transcriptions-dir: /app/talk-transcriptions
   whisper-path: /app/whisper-venv/bin/whisper
-  whisper-model: SMALL_EN
+  whisper-model: BASE_EN
   whisper-models-dir: /app/whisper-models
-  whisper-thread-pool-size: 4
-  waiting-whisper-response-timeout: PT1M
+  whisper-response-timeout: PT3M
+  transcribing-thread-pool-size: 2
+  transcription-processing-thread-pool-size: 4
+  transcription-saving-thread-pool-size: 1
+  transcribing-period: PT10S
   detect-silence-by-no-speech-prob-threshold: '0.8'
   silence-timeout-to-stop-recording: PT10S

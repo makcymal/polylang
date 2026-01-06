@@ -10,11 +10,6 @@ export class Timer {
         this.descriptor = null;
     }
 
-    public start() {
-        this.time = 0;
-        this.resume();
-    }
-
     public resume() {
         this.descriptor ??= setInterval(() => this.time += this.timestep, this.timestep);
     }

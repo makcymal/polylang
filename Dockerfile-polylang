@@ -3,10 +3,14 @@ FROM dhi.io/maven:3-jdk25-debian13-dev AS build
 WORKDIR /app
 
 COPY pom.xml ./pom.xml
-COPY src ./src/
 
 RUN --mount=type=cache,target=/Users/makcymal/.m2 \
-    mvn clean package -DskipTests
+    mvn -B dependency:go-offline
+
+COPY src ./src/
+
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -B package -DskipTests
 
 
 FROM whisper:py3.14-deb13

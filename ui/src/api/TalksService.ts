@@ -1,14 +1,13 @@
-import {http} from '@/api/ApiConfig.ts';
-import type {RecordChunk} from "@/types/RecordChunk.ts";
+import {apiClient} from '@/api/ApiConfig.ts';
 
-export const getNewTalkId = async (): Promise<string> => {
-    return await http().post<string>('/talks').then((resp) => resp.data);
+export const getNewTalkId = async (textId: string): Promise<string> => {
+    return await apiClient.post<string>(`/talks/${textId}`).then(resp => resp.data);
 }
 
-export const sendRecordChunk = async (talkId: string, chunk: RecordChunk) => {
-    await http().put(`/talks/record/${talkId}`, chunk)
+export const appendRecordChunk = async (talkId: string, start: number, chunk: Blob) => {
+    await apiClient.put(`/talks/record/${talkId}/${start}`, chunk, {headers: {"Content-Type": "audio/webm"},});
 }
 
-export const getTalkTranscription = async (talkId: string) => {
-    return await http().get(`/talks/transcription/${talkId}`);
+export const getTalkTranscription = async (talkId: string): Promise<string> => {
+    return await apiClient.get<string>(`/talks/transcription/${talkId}`).then(resp => resp.data);
 }

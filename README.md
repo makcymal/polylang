@@ -33,6 +33,8 @@ whisper -o stt/transciption -f json --verbose False --language en --fp16 False \
         --model_dir whisper-models --model small.en stt/speech/sample.wav
 ```
 
+whisper -f json --verbose False --language en --fp16 False --word_timestamps True --model_dir whisper-models --model small.en
+
 ### Images:
 
 Debian-based:
