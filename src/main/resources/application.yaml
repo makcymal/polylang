@@ -45,6 +45,7 @@ security:
   cookies-attr-same-site: ${COOKIES_ATTR_SAME_SITE}
 
 talks:
+  cleanup-rate: ${TALKS_CLEANUP_RATE}
   records-dir: ${RECORDS_DIR}
   transcriptions-dir: ${TRANSCRIPTIONS_DIR}
   whisper-path: ${WHISPER_PATH}
@@ -53,7 +54,6 @@ talks:
   whisper-response-timeout: ${WHISPER_RESPONSE_TIMEOUT}
   transcribing-thread-pool-size: ${TRANSCRIBING_THREAD_POOL_SIZE}
   transcription-processing-thread-pool-size: ${TRANSCRIPTION_PROCESSING_THREAD_POOL_SIZE}
-  transcription-saving-thread-pool-size: ${TRANSCRIPTION_SAVING_THREAD_POOL_SIZE}
   transcribing-period: ${TRANSCRIBING_PERIOD}
   detect-silence-by-no-speech-prob-threshold: ${DETECT_SILENCE_BY_NO_SPEECH_PROB_THRESHOLD}
   silence-timeout-to-stop-recording: ${SILENCE_TIMEOUT_TO_STOP_RECORDING}

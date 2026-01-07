@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -25,11 +26,11 @@ public class WhisperOutput {
     public static class Segment {
 
         private String text;
-        private Float start;
-        private Float end;
+        private float start;
+        private float end;
 
         @JsonProperty("no_speech_prob")
-        private Float noSpeechProb;
+        private float noSpeechProb;
 
         private List<Word> words;
 
@@ -38,15 +39,21 @@ public class WhisperOutput {
     }
 
     @Getter
+    @ToString
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Word {
 
         private String word;
-        private Float start;
-        private Float end;
-        private Float probability;
+        private float start;
+        private float end;
+        private float probability;
+
+        public void moveLater(float diff) {
+            this.start += diff;
+            this.end += diff;
+        }
 
     }
 

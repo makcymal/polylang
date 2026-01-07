@@ -42,6 +42,7 @@ export class SpeechRecorder {
     private onPermitted(stream: MediaStream) {
         this.recorder = new MediaRecorder(stream);
         this.recorder.ondataavailable = (evt: BlobEvent) => {
+            console.log('got new data: ', evt.data);
             this.chunks.push(evt.data);
             const currTime = this.timer.getTime();
             this.chunkDurations.push(currTime - this.totalChunksTime);
@@ -80,38 +81,6 @@ export class SpeechRecorder {
         await this.processRecordChunk(joinedChunk, this.totalChunksTime - joinedChunkDuration);
     }
 
-    private async collectAndSendChunk(newChunk: Blob) {
-        // if (newChunk.size == 0) {
-        //     return;
-        // }
-        //
-        // console.log('new chunk ', newChunk);
-        // // const blob = this.chunks.length == 0 ? newChunk : new Blob([this.chunks[this.chunks.length - 1], newChunk], SpeechRecorder.BLOB_TYPE);
-        // // this.chunks.push(newChunk);
-        // await this.processRecordChunk(newChunk, this.timer.getTime());
-
-        // this.chunks.push(newChunk);
-        // this.chunksDurationPrefSum.push(this.timer.getTime());
-        //
-        // const j = this.chunks.length - 1;
-        // let i = j;
-        // let precedingDuration = 0;
-        // for (; i >= 0; i--) {
-        //     let dur = this.chunksDurationPrefSum[j];
-        //     if (i > 0) {
-        //         precedingDuration = this.chunksDurationPrefSum[i - 1];
-        //         dur -= precedingDuration;
-        //     }
-        //     if (dur > SpeechRecorder.JOINED_CHUNK_TARGET_DURATION) {
-        //         break;
-        //     }
-        // }
-        //
-        // const chunksToJoin = this.chunks.slice(i, j + 1);
-        // const joinedChunk = new Blob(chunksToJoin, SpeechRecorder.BLOB_TYPE);
-        // await this.processRecordChunk(joinedChunk, precedingDuration);
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private onDenied(reason: any) {
         console.error('Mic access denied: ', reason);
@@ -119,6 +88,7 @@ export class SpeechRecorder {
 
     toggle(): boolean {
         if (this.recorder) {
+            console.log('recorder state before toggling: ', this.recorder.state);
             if (this.recorder.state == 'inactive') {
                 this.recorder.start();
                 this.collectingIntervalDescriptor = setInterval(() => {
@@ -130,12 +100,11 @@ export class SpeechRecorder {
 
                 this.timer.resume();
 
-                if (!this.processingIntervalDescriptor) {
-                    this.collectingIntervalDescriptor = setInterval(() => {
-                        void this.processChunks();
-                    }, SpeechRecorder.PROCESSING_CHUNKS_INTERVAL);
-                }
+                this.processingIntervalDescriptor ??= setInterval(() => {
+                    void this.processChunks();
+                }, SpeechRecorder.PROCESSING_CHUNKS_INTERVAL);
 
+                console.log('recorder state after toggling: ', this.recorder.state);
                 return true;
 
             } else if (this.recorder.state == 'recording') {
@@ -146,6 +115,7 @@ export class SpeechRecorder {
 
                 this.timer.pause();
 
+                console.log('recorder state after toggling: ', this.recorder.state);
                 return false;
             }
         }

@@ -7,6 +7,7 @@ import type {RegisterRequest} from "@/types/users/RegisterRequest.ts";
 import type {ConfirmEmailRequest} from "@/types/users/ConfirmEmailRequest.ts";
 import {checkUserExists, confirmEmail, doLogin, doLogout, registerUser} from "@/api/UsersService.ts";
 import type {AxiosError} from "axios";
+import {useTranslation} from "react-i18next";
 
 interface Props {
     isVisible: boolean;
@@ -16,6 +17,8 @@ interface Props {
 type Stage = 'start' | 'register' | 'confirm' | 'login' | 'view';
 
 export const Profile = ({isVisible, setIsVisible}: Props) => {
+    const {t} = useTranslation();
+
     const user = useRef<User | null>(null);
     const emailOrUsername = useRef<string | null>(null);
     const [email, setEmail] = useState('');
@@ -174,87 +177,87 @@ export const Profile = ({isVisible, setIsVisible}: Props) => {
                         {
                             stage == 'start' &&
                             <div className="form">
-                                <p className="form-title form-width">Войти или зарегистрироваться</p>
+                                <p className="form-title form-width">{t('loginOrRegister')}</p>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Электронная почта или имя пользователя</p>
+                                    <p className="form-item-name">{t('emailOrUsername')}</p>
                                     <input className="form-input" placeholder='user@mail.com'
                                            onChange={stageStartOnEmailOrUsernameChanged}/>
                                 </div>
                                 <button className="cta form-button"
                                         onClick={() => void stageStartOnButtonClicked()}>
-                                    Продолжить
+                                    {t('continue')}
                                 </button>
                             </div>
                         }
                         {
                             stage == 'register' &&
                             <div className="form">
-                                <p className="form-title form-width">Зарегистрироваться</p>
+                                <p className="form-title form-width">{t('register')}</p>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Электронная почта</p>
+                                    <p className="form-item-name">{t('email')}</p>
                                     <input className="form-input" placeholder='user@mail.com'
                                            value={email}
                                            onChange={stageRegisterOnEmailChanged}/>
                                 </div>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Имя пользователя</p>
+                                    <p className="form-item-name">{t('username')}</p>
                                     <input className="form-input" placeholder='username'
                                            value={username}
                                            onChange={stageRegisterOnUsernameChanged}/>
                                 </div>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Пароль</p>
+                                    <p className="form-item-name">{t('password')}</p>
                                     <input className="form-input" placeholder='P4ssw0rd!' type='password'
                                            onChange={stageRegisterOnPasswordChanged}/>
                                 </div>
                                 <button className="cta form-button"
                                         onClick={() => void stageRegisterOnButtonClicked()}>
-                                    Продолжить
+                                    {t('continue')}
                                 </button>
                             </div>
                         }
                         {
                             stage == 'confirm' &&
                             <div className="form">
-                                <p className="form-title form-width">Подтверждение почты</p>
+                                <p className="form-title form-width">{t('emailConfirmation')}</p>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Электронная почта</p>
+                                    <p className="form-item-name">{t('email')}</p>
                                     <input className="form-input" value={email}
                                            readOnly={true}/>
                                 </div>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Код подтверждения</p>
+                                    <p className="form-item-name">{t('confirmationCode')}</p>
                                     <input className="form-input" placeholder='123456'
                                            onChange={stageConfirmOnCodeChanged}/>
                                 </div>
                                 <button className="cta form-button"
                                         onClick={() => void stageConfirmOnButtonClicked()}>
-                                    Подтвердить
+                                    {t('confirm')}
                                 </button>
                             </div>
                         }
                         {
                             stage == 'login' &&
                             <div className="form">
-                                <p className="form-title form-width">Войти</p>
+                                <p className="form-title form-width">{t('login')}</p>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Электронная почта или имя пользователя</p>
+                                    <p className="form-item-name">{t('emailOrUsername')}</p>
                                     <input className="form-input" value={login}
                                            onChange={stageLoginOnLoginChanged}/>
                                 </div>
                                 <div className="form-item form-width">
-                                    <p className="form-item-name">Пароль</p>
+                                    <p className="form-item-name">{t('password')}</p>
                                     <input className="form-input" placeholder='P4ssw0rd!' type='password'
                                            onChange={stageLoginOnPasswordChanged}/>
                                 </div>
                                 <button className="cta form-button"
                                         onClick={() => void stageLoginOnButtonClicked()}>
-                                    Продолжить
+                                    {t('continue')}
                                 </button>
                                 {
                                     passwordIncorrect &&
                                     <div className="form-item form-width">
-                                        <p className="form-warn">Неверный пароль</p>
+                                        <p className="form-warn">{t('incorrectPassword')}</p>
                                     </div>
                                 }
                             </div>
@@ -262,10 +265,10 @@ export const Profile = ({isVisible, setIsVisible}: Props) => {
                         {
                             stage == 'view' &&
                             <div className="form">
-                                <p className="form-title form-width">Привет, %{username}%!</p>
+                                <p className="form-title form-width">{t('hi')}, %{username}%!</p>
                                 <button className="cta form-button"
                                         onClick={() => void stageViewOnButtonClicked()}>
-                                    Выйти
+                                    {t('logout')}
                                 </button>
                             </div>
                         }

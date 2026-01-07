@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import tech.makcymal.polylang.common.SerdeUtils;
 import tech.makcymal.polylang.common.exceptions.HttpException;
 import tech.makcymal.polylang.security.SecurityProperties;
 import tech.makcymal.polylang.security.exceptions.AuthException;
@@ -27,6 +26,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
+
+import static tech.makcymal.polylang.common.CommonUtils.objToBase64Json;
 
 @Slf4j
 @RestController
@@ -210,7 +211,7 @@ public class UsersController {
     }
 
     void setCurrentUserCookie(HttpHeaders headers, UserModel userModel) {
-        ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, SerdeUtils.intoBase64Json(userModel))
+        ResponseCookie cookie = ResponseCookie.from(CURRENT_USER_COOKIE, objToBase64Json(userModel))
                 .httpOnly(false)
                 .secure(securityProps.isCookiesAttrSecure())
                 .sameSite(securityProps.getCookiesAttrSameSite())

@@ -14,6 +14,9 @@ public interface EmailConfirmationRepo extends JpaRepository<EmailConfirmationEn
     Optional<EmailConfirmationEntity> findByEmail(String email);
 
     @Transactional
+    void deleteAllByEmail(String email);
+
+    @Transactional
     void deleteAllByEmailAndExpiresAtBefore(String email, ZonedDateTime expiresAtBefore);
 
 }

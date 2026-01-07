@@ -21,4 +21,14 @@ public interface TalksRepo extends JpaRepository<TalkEntity, UUID> {
     @Transactional
     void setTranscription(UUID id, String transcription);
 
+    @Query(value = """
+                   DELETE
+                   FROM talks
+                   WHERE created_at > NOW() + INTERVAL '1 day' AND (transcription IS NULL OR TRIM(transcription) = '');
+                   """,
+           nativeQuery = true)
+    @Modifying
+    @Transactional
+    void deleteOldWithEmptyTranscription();
+
 }

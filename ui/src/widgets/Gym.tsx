@@ -6,19 +6,15 @@ import TextPanel from '@/components/TextPanel.tsx';
 import '@/widgets/Gym.css';
 import {getNewTalkId, getTalkTranscription, appendRecordChunk} from "@/api/TalksService.ts";
 import type {Text} from "@/types/Text.ts"
-
-const textToTranslateTitle = 'Текст для перевода';
-
-const transcribedTranslationTitle = 'Ваш перевод';
-const transcribedTranslationHint = 'Текст можно редактировать';
-
-const translationAnalysisPlaceholder = 'Здесь будет анализ вашего перевода';
+import {useTranslation} from "react-i18next";
 
 interface Props {
     theme: Theme;
 }
 
 export const Gym = ({theme}: Props) => {
+    const {t} = useTranslation();
+
     const [textToTranslate, setTextToTranslate] = useState<Text>({
         id: '',
         content: '',
@@ -43,7 +39,6 @@ export const Gym = ({theme}: Props) => {
         }
     }
 
-    // eslint-disable-next-line react-hooks/refs
     const recorder = useRef(new SpeechRecorder(processRecordChunk));
     const [isRecording, setIsRecording] = useState(false);
 
@@ -66,7 +61,7 @@ export const Gym = ({theme}: Props) => {
                 timerSeconds.current += 1;
                 setTimerFormatted(getTimerFormatted());
             }, 1000);
-            transcribeDescriptor.current = setInterval(async () => {
+            transcribeDescriptor.current ??= setInterval(async () => {
                 if (talkId.current) {
                     const transcription = await getTalkTranscription(talkId.current);
                     setTranscribedRecord(transcription);
@@ -110,18 +105,18 @@ export const Gym = ({theme}: Props) => {
                 <div className="button-with-hint">
                     <button className="cta translation-button" type="button">
                         <img
-                            alt={'Выбрать текст для перевода'}
+                            alt={t('selectText')}
                             src={theme === LIGHT ? '/compass.black.png' : '/compass.white.png'}
                             className="explore-texts-icon"
                         />
                     </button>
-                    <p className="hint">Выбрать текст для перевода</p>
+                    <p className="hint">{t('selectText')}</p>
                 </div>
 
                 <div className="button-with-hint">
                     <button className="cta translation-button" onClick={toggleRecording} type="button">
                         <img
-                            alt={'Начать переводить'}
+                            alt={t('startTranslation')}
                             src={
                                 theme === LIGHT
                                     ? isRecording
@@ -135,22 +130,32 @@ export const Gym = ({theme}: Props) => {
                         />
                         <p className={isRecording ? 'recording-timer blink' : 'recording-timer'}>{timerFormatted}</p>
                     </button>
-                    <p className="hint">{isRecording ? 'Приостановить перевод' : 'Начать переводить'}</p>
+                    <p className="hint">
+                        {
+                            isRecording
+                                ? t('pauseTranslating')
+                                : (
+                                    timerFormatted == '00:00'
+                                        ? t('startTranslating')
+                                        : t('resumeTranslating')
+                                )
+                        }
+                    </p>
                 </div>
             </div>
 
             <div className="translation-contents">
                 <div className="text-to-translate-wr">
-                    <TextPanel title={textToTranslateTitle} text={textToTranslate.content} isEditable={false}/>
+                    <TextPanel title={t('textToTranslate')} text={textToTranslate.content} isEditable={false}/>
                 </div>
                 <div className="transcribed-translation-wr">
                     <TextPanel
-                        title={transcribedTranslationTitle}
+                        title={t('yourTranslation')}
                         text={transcribedRecord}
                         isEditable={true}
                         onTextEdit={setTranscribedRecord}
                         placeholder='—'
-                        hint={transcribedTranslationHint}
+                        hint={t('textIsEditable')}
                     />
                 </div>
             </div>
@@ -158,10 +163,10 @@ export const Gym = ({theme}: Props) => {
             <div className="analysis">
                 <div className="analysis-controls">
                     <button className="cta analyze-btn" type="button" onClick={analyzeTranslation}>
-                        Анализировать перевод
+                        {t('analyzeTranslation')}
                     </button>
                 </div>
-                <TextPanel text={translationAnalysis} placeholder={translationAnalysisPlaceholder}/>
+                <TextPanel text={translationAnalysis} placeholder={t('hereWillBeAnalysis')}/>
             </div>
         </main>
     );

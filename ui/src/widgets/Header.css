@@ -63,3 +63,45 @@
     height: 1.7rem;
     width: 1.7rem;
 }
+
+
+.button-with-hint {
+    position: relative;
+}
+
+.hint {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    text-align: center;
+    font-size: 0.7em;
+    font-weight: 500;
+    margin: 0;
+    padding: 0.4rem;
+    border-radius: 0.4rem;
+    white-space: nowrap;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    transform: translateX(-50%) translateY(calc(10px));
+    transition: all 0.3s ease;
+    z-index: 10;
+
+    opacity: 0;
+    visibility: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 10px;
+        border-style: solid;
+        border-color: transparent transparent var(--text-primary) transparent;
+    }
+}
+
+.button-with-hint:hover .hint {
+    opacity: 1;
+    visibility: visible;
+}

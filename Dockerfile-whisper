@@ -13,3 +13,5 @@ RUN source whisper-venv/bin/activate \
     && whisper --model_dir whisper-models --model tiny.en sample.wav \
     && whisper --model_dir whisper-models --model base.en sample.wav \
     && whisper --model_dir whisper-models --model small.en sample.wav
+
+RUN rm sample.*

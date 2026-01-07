@@ -82,6 +82,10 @@ public class UsersService {
         }
         UserEntity userEntity = userEntityOpt.get();
 
+        if (userEntity.getEmailConfirmed()) {
+            emailConfirmationRepo.deleteAllByEmail(request.getEmail());
+        }
+
         Session session = Session.ofNulls();
         session.setCurrentUser(entityToModel(userEntity));
 
@@ -158,6 +162,7 @@ public class UsersService {
         session.setCurrentUser(entityToModel(userEntity));
 
         generateTokens(session);
+        refreshTokensRepo.deleteByJti(oldRefreshJti);
 
         return session;
     }

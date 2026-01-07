@@ -12,9 +12,9 @@ public interface RefreshTokensRepo extends JpaRepository<RefreshTokenEntity, UUI
     Optional<RefreshTokenEntity> findByJtiAndExpiresAtAfter(UUID jti, ZonedDateTime expiresAtAfter);
 
     @Transactional
-    void deleteAllByUserId(UUID userId);
+    void deleteByJti(UUID jti);
 
     @Transactional
-    void deleteByJti(UUID jti);
+    void deleteAllByUserId(UUID userId);
 
 }

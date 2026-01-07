@@ -16,6 +16,9 @@ import java.time.Duration;
 public class TalksProperties {
 
     @NotNull
+    private Duration cleanupRate;
+
+    @NotNull
     private String recordsDir;
 
     @NotNull
@@ -35,7 +38,6 @@ public class TalksProperties {
 
     private int transcribingThreadPoolSize;
     private int transcriptionProcessingThreadPoolSize;
-    private int transcriptionSavingThreadPoolSize;
 
     @NotNull
     private Duration transcribingPeriod;

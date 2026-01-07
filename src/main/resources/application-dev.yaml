@@ -28,15 +28,15 @@ security:
   cookies-attr-same-site: 'Lax'
 
 talks:
-  records-dir: /app/talk-records
-  transcriptions-dir: /app/talk-transcriptions
+  cleanup-rate: PT10S
+  records-dir: ./_dev/talk-records
+  transcriptions-dir: ./_dev/talk-transcriptions
   whisper-path: /app/whisper-venv/bin/whisper
   whisper-model: BASE_EN
   whisper-models-dir: /app/whisper-models
   whisper-response-timeout: PT3M
   transcribing-thread-pool-size: 2
   transcription-processing-thread-pool-size: 4
-  transcription-saving-thread-pool-size: 1
   transcribing-period: PT10S
   detect-silence-by-no-speech-prob-threshold: '0.8'
   silence-timeout-to-stop-recording: PT10S

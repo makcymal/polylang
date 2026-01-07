@@ -1,15 +1,14 @@
 package tech.makcymal.polylang.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import tech.makcymal.polylang.common.exceptions.FileReadingException;
 import tech.makcymal.polylang.common.exceptions.JsonFileReadingException;
+import tech.makcymal.polylang.common.exceptions.MkdirException;
 import tech.makcymal.polylang.common.exceptions.NonZeroExitCodeException;
 import tech.makcymal.polylang.common.exceptions.ProcessException;
 import tech.makcymal.polylang.common.exceptions.StdoutReadingException;
@@ -20,22 +19,23 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
+import java.util.function.Predicate;
 
-public class SystemUtils {
+public class CommonUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(SystemUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(CommonUtils.class);
     private static final JsonMapper jsonMapper = AppConfig.getJsonMapper();
 
-    public static String getFileNameWithoutExtension(@NonNull String filePath) {
-        Path path = Paths.get(filePath);
-        String fileName = path.getFileName().toString();
-        int lastDot = fileName.lastIndexOf('.');
-        if (lastDot < 0) {
-            log.warn("filePath does not have extension: {}", filePath);
-            return fileName;
+    public static void mkdir(String path) {
+        try {
+            Files.createDirectories(Paths.get(path));
+        } catch (IOException e) {
+            RuntimeException e1 = new MkdirException(path, e);
+            log.error(e1.getMessage(), e1);
+            throw e1;
         }
-        return fileName.substring(0, lastDot);
     }
 
     public static <T> T readJsonFile(@NonNull String filePath, @NonNull Class<T> clazz) {
@@ -99,6 +99,30 @@ public class SystemUtils {
         } catch (IOException e) {
             throw new StdoutReadingException(cmd, e);
         }
+    }
+
+    public static <T> String objToJson(T object) {
+        try {
+            return jsonMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> String objToBase64Json(T object) {
+        return Base64.getEncoder().encodeToString(objToJson(object).getBytes());
+    }
+
+    public static <T> int findFirst(List<T> list, Predicate<T> predicate) {
+        if (CollectionUtils.isEmpty(list)) {
+            return -1;
+        }
+        for (int i = 0; i < list.size(); ++i) {
+            if (predicate.test(list.get(i))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 }

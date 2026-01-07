@@ -4,13 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.makcymal.polylang.common.NamingThreadFactory;
-import tech.makcymal.polylang.common.SystemUtils;
+import tech.makcymal.polylang.common.CommonUtils;
 import tech.makcymal.polylang.talks.TalksProperties;
 import tech.makcymal.polylang.talks.TalksRepo;
 
 import jakarta.annotation.PostConstruct;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static tech.makcymal.polylang.talks.transcription.WhisperOutput.Word;
+import static tech.makcymal.polylang.common.CommonUtils.findFirst;
 
 @Slf4j
 @Service
@@ -36,7 +35,6 @@ public class TranscriptionService {
 
     private final TalksRepo repo;
     private final TalksProperties props;
-    private final Map<UUID, List<Word>> transcriptions = new ConcurrentHashMap<>();
 
     // transcribing stage
     ScheduledExecutorService transcribingExecutor;
@@ -47,16 +45,12 @@ public class TranscriptionService {
     // processing stage
     ExecutorService processingExecutor;
     private final BlockingQueue<Runnable> processTasks = new LinkedBlockingQueue<>();
-
-    // saving stage
-    ExecutorService savingExecutor;
-    private final BlockingQueue<Runnable> savingTasks = new LinkedBlockingQueue<>();
+    private final Map<UUID, List<Word>> transcribedWords = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
         initTranscribingExecutor();
         initProcessingExecutor();
-        initSavingExecutor();
     }
 
     // transcribing stage
@@ -100,7 +94,7 @@ public class TranscriptionService {
         tasks.forEach(task -> cmd.add(task.getFileToTranscribe()));
 
         try {
-            SystemUtils.executeCommand(cmd);
+            CommonUtils.executeCommand(cmd);
         } catch (RuntimeException e) {
             log.error("err - executing whisper", e);
             tasks.forEach(task -> task.setTranscribingError(e));
@@ -148,38 +142,50 @@ public class TranscriptionService {
     }
 
     void processTranscription(Task task) {
-        WhisperOutput output = SystemUtils.readJsonFile(task.getFileToProcess(), WhisperOutput.class);
+        WhisperOutput output = CommonUtils.readJsonFile(task.getFileToProcess(), WhisperOutput.class);
         List<Word> words = output.getSegments().stream()
                 .map(WhisperOutput.Segment::getWords)
                 .flatMap(List::stream)
+                .peek(word -> word.moveLater(task.getChunkStart()))
                 .toList();
-        transcriptions.put(task.getTalkId(), words);
-        submitSavingTask(task);
+
+        log.info("Newly transcribed words: " + words);
+
+        updateTranscribedWords(task.getTalkId(), words);
+
+        String transcribedText = transcribedWords.get(task.getTalkId()).stream()
+                .map(Word::getWord)
+                .collect(Collectors.joining(" "))
+                // remove spaces at the beginning
+                .replace("^\\s*", "")
+                // remove spaces at the end
+                .replace("\\s*$", "")
+                // remove spaces before dots
+                .replace("\\s*\\.", ".")
+                // remove spaces before commas
+                .replace("\\s*\\,", ",")
+                // remove newlines
+                .replace("\n", " ")
+                // reduce consecutive spaces to one
+                .replace("\\s*", " ");
+
+        repo.setTranscription(task.getTalkId(), transcribedText);
     }
 
-    // saving stage
+    void updateTranscribedWords(UUID talkId, List<Word> newWords) {
+        transcribedWords.computeIfAbsent(talkId, k -> new ArrayList<>());
+        List<Word> allWords = transcribedWords.get(talkId);
 
-    void initSavingExecutor() {
-        int executorSize = props.getTranscriptionSavingThreadPoolSize();
+        if (allWords.isEmpty() || newWords.isEmpty()) {
+            allWords.addAll(newWords);
+            return;
+        }
 
-        savingExecutor = new ThreadPoolExecutor(
-                executorSize,
-                executorSize,
-                0,
-                TimeUnit.MILLISECONDS,
-                savingTasks,
-                new NamingThreadFactory("transcription-processing-")
-        );
-    }
-
-    void submitSavingTask(Task task) {
-        savingExecutor.execute(() -> saveTranscription(task));
-    }
-
-    void saveTranscription(Task task) {
-        List<Word> words = transcriptions.get(task.getTalkId());
-        String transcription = words.stream().map(Word::getWord).collect(Collectors.joining(" "));
-        repo.setTranscription(task.getTalkId(), transcription);
+        int i = findFirst(newWords, word -> word.getEnd() >= allWords.getLast().getStart());
+        while (!allWords.isEmpty() && newWords.get(i).getStart() < allWords.getLast().getEnd()) {
+            allWords.removeLast();
+        }
+        allWords.addAll(newWords);
     }
 
 }
