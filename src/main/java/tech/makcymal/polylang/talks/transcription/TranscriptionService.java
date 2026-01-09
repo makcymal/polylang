@@ -63,7 +63,7 @@ public class TranscriptionService {
                 "-o", props.getTranscriptionsDir(),
                 "-f", "json",
                 "--verbose", "False",
-                "--language", "en",
+                "--lang", "en",
                 "--fp16", "False",
                 "--word_timestamps", "True"
         );

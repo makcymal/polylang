@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.makcymal.polylang.languages.Language;
-import tech.makcymal.polylang.languages.LanguageLevel;
+import tech.makcymal.polylang.langs.Lang;
+import tech.makcymal.polylang.langs.LangLevel;
 import org.hibernate.annotations.ColumnTransformer;
 
 import jakarta.persistence.Entity;
@@ -28,16 +28,18 @@ public class TextEntity {
 
     @Enumerated(EnumType.STRING)
     @ColumnTransformer(
-            read = "language",
-            write = "?::language_t"
+            read = "lang",
+            write = "?::lang_t"
     )
-    private Language language;
+    private Lang lang;
 
     @Enumerated(EnumType.STRING)
     @ColumnTransformer(
-            read = "declared_level",
-            write = "?::language_level"
+            read = "level",
+            write = "?::lang_level_t"
     )
-    private LanguageLevel intendedLevel;
+    private LangLevel level;
+
+    private String source;
 
 }

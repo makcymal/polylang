@@ -17,7 +17,6 @@ public class RegisterRequest {
     @NotBlank
     private String password;
 
-    // private Language nativeLanguage;
-    // private List<StudiedLanguageDto> studiedLanguages;
+    // private Lang nativeLang;
 
 }

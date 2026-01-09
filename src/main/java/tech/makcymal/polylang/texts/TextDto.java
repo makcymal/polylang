@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
-import tech.makcymal.polylang.languages.Language;
-import tech.makcymal.polylang.languages.LanguageLevel;
+import tech.makcymal.polylang.langs.Lang;
+import tech.makcymal.polylang.langs.LangLevel;
 
 import java.util.UUID;
 
@@ -17,7 +17,8 @@ public class TextDto {
 
     private UUID id;
     private String content;
-    private Language language;
-    private LanguageLevel intendedLevel;
+    private Lang lang;
+    private LangLevel level;
+    private String source;
 
 }

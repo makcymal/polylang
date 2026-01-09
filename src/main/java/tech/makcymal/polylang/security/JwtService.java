@@ -18,8 +18,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j

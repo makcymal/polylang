@@ -1,4 +1,4 @@
-package tech.makcymal.polylang.languages;
+package tech.makcymal.polylang.stats;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface StudiedLanguagesRepo extends JpaRepository<StudiedLanguageEntity, UUID> {
+public interface StatsRepo extends JpaRepository<StatEntity, UUID> {
 }

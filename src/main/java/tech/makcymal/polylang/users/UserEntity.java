@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.makcymal.polylang.languages.Language;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import tech.makcymal.polylang.langs.Lang;
 import org.hibernate.annotations.ColumnTransformer;
 
 import jakarta.persistence.Entity;
@@ -34,17 +36,19 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @ColumnTransformer(
-            read = "native_language",
-            write = "?::language_t"
+            read = "native_lang",
+            write = "?::lang_t"
     )
-    private Language nativeLanguage;
+    private Lang nativeLang;
 
+    @CreationTimestamp
     private ZonedDateTime createdAt;
 
+    @UpdateTimestamp
     private ZonedDateTime updatedAt;
 
-    private ZonedDateTime lastAuthenticationAt;
+    private ZonedDateTime lastAuthenticatedAt;
 
-    private ZonedDateTime lastPasswordResetAt;
+    private ZonedDateTime lastResetPasswordAt;
 
 }

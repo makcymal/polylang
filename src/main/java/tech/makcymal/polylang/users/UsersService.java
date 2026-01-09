@@ -127,6 +127,8 @@ public class UsersService {
             throw new AuthException(HttpStatus.UNAUTHORIZED, "Wrong password");
         }
 
+        usersRepo.updateLastAuthenticationAt(userEntity.getId(), ZonedDateTime.now());
+
         Session session = Session.ofNulls();
         session.setCurrentUser(entityToModel(userEntity));
 
@@ -243,9 +245,7 @@ public class UsersService {
                 .emailConfirmed(false)
                 .username(request.getUsername())
                 .passwordHash(hashedPw)
-                .createdAt(now)
-                .updatedAt(now)
-                .lastAuthenticationAt(now)
+                .lastAuthenticatedAt(now)
                 .build();
     }
 

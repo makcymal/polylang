@@ -27,7 +27,7 @@ public class TalksController {
     @PostMapping("/{textId}")
     @ResponseStatus(HttpStatus.CREATED)
     public UUID createNewTalk(@PathVariable UUID textId) {
-        return service.createNewTalk(authHolder.get().getUserId(), textId);
+        return service.createNewTalk(textId, authHolder.get().getUserId(), authHolder.get().getClientId());
     }
 
     @PutMapping(value = "/record/{talkId}/{start}",

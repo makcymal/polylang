@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS texts
 (
-    id             uuid PRIMARY KEY,
-    content        TEXT       NOT NULL,
-    language       language_t NOT NULL,
-    intended_level language_level_t
+    id      uuid PRIMARY KEY,
+    content TEXT         NOT NULL,
+    source  VARCHAR(255),
+    lang    lang_t       NOT NULL,
+    level   lang_level_t NOT NULL
 );

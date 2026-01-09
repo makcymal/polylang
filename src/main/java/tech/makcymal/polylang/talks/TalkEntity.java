@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -25,13 +26,18 @@ public class TalkEntity {
 
     private UUID textId;
 
+    private UUID clientId;
+
     private String transcription;
 
     private String analysis;
 
-    private Integer score;
+    private Float score;
 
     @CreationTimestamp
     private ZonedDateTime createdAt;
+
+    @UpdateTimestamp
+    private ZonedDateTime updatedAt;
 
 }

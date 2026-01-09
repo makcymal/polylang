@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,5 +35,15 @@ public interface UsersRepo extends JpaRepository<UserEntity, UUID> {
     @Modifying
     @Transactional
     void tryToConfirmEmail(String email, String code);
+
+    @Query(value = """
+                   UPDATE users
+                   SET last_authentication_at = :dt
+                   WHERE id = :id
+                   """,
+           nativeQuery = true)
+    @Modifying
+    @Transactional
+    void updateLastAuthenticationAt(UUID id, ZonedDateTime dt);
 
 }

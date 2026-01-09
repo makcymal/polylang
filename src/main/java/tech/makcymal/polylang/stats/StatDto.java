@@ -1,26 +1,21 @@
-package tech.makcymal.polylang.languages;
+package tech.makcymal.polylang.stats;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.UUID;
+import tech.makcymal.polylang.langs.Lang;
 
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class StudiedLanguageDto {
-
-    private UUID id;
+public class StatDto {
 
     private Integer userId;
 
-    private Language language;
+    private Lang lang;
 
-    private LanguageLevel declaredLevel;
-
-    private LanguageLevel estimatedLevel;
+    private HistoryEntry history;
 
 }

@@ -34,11 +34,12 @@ public class TalksService {
         mkdir(props.getTranscriptionsDir());
     }
 
-    public UUID createNewTalk(UUID userId, UUID textId) {
+    public UUID createNewTalk(UUID textId, UUID userId, UUID clientId) {
         TalkEntity entity = TalkEntity.builder()
                 .id(UUID.randomUUID())
                 .userId(userId)
                 .textId(textId)
+                .clientId(clientId)
                 .build();
         TalkEntity savedEntity = repo.save(entity);
         return savedEntity.getId();

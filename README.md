@@ -28,7 +28,7 @@ audio [audio ...]
 ```
 
 ```bash
-whisper -o stt/transciption -f json --verbose False --language en --fp16 False \
+whisper -o stt/transciption -f json --verbose False --lang en --fp16 False \
         --word_timestamps True --clip_timestamps 0,10 \
         --model_dir whisper-models --model small.en stt/speech/sample.wav
 ```

@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS users
     email_confirmed        BOOLEAN                  NOT NULL DEFAULT FALSE,
     username               VARCHAR(64) UNIQUE       NOT NULL,
     password_hash          VARCHAR(60)              NOT NULL,
-    native_language        language_t,
+    native_lang            lang_t,
     created_at             TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at             TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_authentication_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_password_reset_at TIMESTAMP WITH TIME ZONE
+    last_authenticated_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+    last_reset_password_at TIMESTAMP WITH TIME ZONE
 );

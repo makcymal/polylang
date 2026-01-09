@@ -1,10 +1,12 @@
-package tech.makcymal.polylang.languages;
+package tech.makcymal.polylang.stats;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import tech.makcymal.polylang.langs.Lang;
 import tech.makcymal.polylang.users.UserEntity;
 import org.hibernate.annotations.ColumnTransformer;
 
@@ -15,14 +17,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "studied_languages")
-public class StudiedLanguageEntity {
+@Entity(name = "stats")
+public class StatEntity {
 
     @Id
     private UUID id;
@@ -33,23 +36,12 @@ public class StudiedLanguageEntity {
 
     @Enumerated(EnumType.STRING)
     @ColumnTransformer(
-            read = "language",
-            write = "?::language_t"
+            read = "lang",
+            write = "?::lang_t"
     )
-    private Language language;
+    private Lang lang;
 
-    @Enumerated(EnumType.STRING)
-    @ColumnTransformer(
-            read = "declared_level",
-            write = "?::language_level_t"
-    )
-    private LanguageLevel declaredLevel;
-
-    @Enumerated(EnumType.STRING)
-    @ColumnTransformer(
-            read = "estimated_level",
-            write = "?::language_level_t"
-    )
-    private LanguageLevel estimatedLevel;
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<HistoryEntry> history;
 
 }

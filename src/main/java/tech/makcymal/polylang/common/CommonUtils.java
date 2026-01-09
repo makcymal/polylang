@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Predicate;
@@ -123,6 +124,15 @@ public class CommonUtils {
             }
         }
         return -1;
+    }
+
+    public static void sleep(Duration duration) {
+        try {
+            Thread.sleep(duration.toMillis());
+        } catch (InterruptedException e) {
+            log.error("err - sleep interrupted", e);
+            Thread.currentThread().interrupt();
+        }
     }
 
 }
