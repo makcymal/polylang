@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import tech.makcymal.polylang.common.exceptions.FileReadingException;
 import tech.makcymal.polylang.common.exceptions.JsonFileReadingException;
 import tech.makcymal.polylang.common.exceptions.MkdirException;
@@ -120,6 +121,22 @@ public class CommonUtils {
         }
         for (int i = 0; i < list.size(); ++i) {
             if (predicate.test(list.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int findFirst(String str, Predicate<Character> predicate) {
+        return findNext(str, predicate, -1);
+    }
+
+    public static int findNext(String str, Predicate<Character> predicate, int after) {
+        if (!StringUtils.hasText(str)) {
+            return -1;
+        }
+        for (int i = after + 1; i < str.length(); ++i) {
+            if (predicate.test(str.charAt(i))) {
                 return i;
             }
         }

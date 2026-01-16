@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.function.Predicate;
+
+import static tech.makcymal.polylang.common.CommonUtils.findFirst;
+import static tech.makcymal.polylang.common.CommonUtils.findNext;
 
 @Getter
 @NoArgsConstructor
@@ -39,11 +43,12 @@ public class WhisperOutput {
     }
 
     @Getter
-    @ToString
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Word {
+
+        private static final Predicate<Character> ALPHA_NUMERIC_FILTER = c -> Character.isAlphabetic(c) || Character.isDigit(c);
 
         private String word;
         private float start;
@@ -55,6 +60,32 @@ public class WhisperOutput {
             this.end += diff;
         }
 
+        @Override
+        public String toString() {
+            return "[%s][%.2f:%.2f~%.2f]".formatted(word, start, end, probability);
+        }
+
+        public boolean equalsWithProb(Word o, float probThreshold) {
+            if (end <= o.start || start >= o.end) {
+                return false;
+            }
+            if (probability <= probThreshold || o.probability <= probThreshold) {
+                return false;
+            }
+
+            int i = findFirst(word, ALPHA_NUMERIC_FILTER);
+            int j = findFirst(o.word, ALPHA_NUMERIC_FILTER);
+
+            while (0 <= i && i < word.length() && 0 <= j && j < o.word.length()) {
+                if (Character.toLowerCase(word.charAt(i)) != Character.toLowerCase(o.word.charAt(j))) {
+                    return false;
+                }
+                i = findNext(word, ALPHA_NUMERIC_FILTER, i);
+                j = findNext(o.word, ALPHA_NUMERIC_FILTER, j);
+            }
+
+            return i == -1 && j == -1;
+        }
     }
 
 }

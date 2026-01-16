@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.makcymal.polylang.common.NamingThreadFactory;
 import tech.makcymal.polylang.common.CommonUtils;
+import tech.makcymal.polylang.common.StringView;
 import tech.makcymal.polylang.talks.TalksProperties;
 import tech.makcymal.polylang.talks.TalksRepo;
 
@@ -12,6 +13,7 @@ import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -91,7 +93,10 @@ public class TranscriptionService {
 
         List<String> cmd = new ArrayList<>(rawTranscribeCmd.size() + tasks.size());
         cmd.addAll(rawTranscribeCmd);
-        tasks.forEach(task -> cmd.add(task.getFileToTranscribe()));
+        tasks.forEach(task -> {
+            log.info("Transcribing {}", task.getFileToTranscribe());
+            cmd.add(task.getFileToTranscribe());
+        });
 
         try {
             CommonUtils.executeCommand(cmd);
@@ -149,12 +154,13 @@ public class TranscriptionService {
                 .peek(word -> word.moveLater(task.getChunkStart()))
                 .toList();
 
-        log.info("Newly transcribed words: " + words);
+        // log.info("Newly transcribed words: {} starting at: {}", words, task.getChunkStart());
 
         updateTranscribedWords(task.getTalkId(), words);
 
         String transcribedText = transcribedWords.get(task.getTalkId()).stream()
                 .map(Word::getWord)
+                .filter(Objects::nonNull)
                 .collect(Collectors.joining(" "))
                 // remove spaces at the beginning
                 .replace("^\\s*", "")
@@ -173,19 +179,79 @@ public class TranscriptionService {
     }
 
     void updateTranscribedWords(UUID talkId, List<Word> newWords) {
-        transcribedWords.computeIfAbsent(talkId, k -> new ArrayList<>());
-        List<Word> allWords = transcribedWords.get(talkId);
+        transcribedWords.computeIfAbsent(talkId, _ -> new ArrayList<>());
+        List<Word> oldWords = transcribedWords.get(talkId);
 
-        if (allWords.isEmpty() || newWords.isEmpty()) {
-            allWords.addAll(newWords);
+        if (oldWords.isEmpty() || newWords.isEmpty()) {
+            oldWords.addAll(newWords);
             return;
         }
 
-        int i = findFirst(newWords, word -> word.getEnd() >= allWords.getLast().getStart());
-        while (!allWords.isEmpty() && newWords.get(i).getStart() < allWords.getLast().getEnd()) {
-            allWords.removeLast();
+        List<Word> mergedWords = mergeOldWordsWithNewWords(oldWords, newWords);
+        log.info("\n{}\n+\n{}\n=\n{}", oldWords, newWords, mergedWords);
+
+        transcribedWords.put(talkId, mergedWords);
+    }
+
+    private List<Word> mergeOldWordsWithNewWords(List<Word> oldWords, List<Word> newWords) {
+        // common subsequence length
+        int[][] csl = new int[newWords.size() + 1][oldWords.size() + 1];
+        int pivots = 0;
+        List<Integer> newWordsPivots = new ArrayList<>();
+        List<Integer> oldWordsPivots = new ArrayList<>();
+
+        for (int i = 0; i < newWords.size(); i++) {
+            for (int j = 0; j < oldWords.size(); j++) {
+                if (newWords.get(i).equalsWithProb(oldWords.get(j), 0.5f)) {
+                    csl[i + 1][j + 1] = csl[i][j] + 1;
+                    pivots++;
+                    newWordsPivots.add(i);
+                    oldWordsPivots.add(j);
+                } else {
+                    csl[i + 1][j + 1] = Math.max(csl[i][j + 1], csl[i + 1][j]);
+                }
+            }
         }
-        allWords.addAll(newWords);
+
+        if (pivots == 0) {
+            return new ArrayList<>(newWords);
+        }
+
+        List<Word> merged = new ArrayList<>(Math.min(newWords.size(), oldWords.size()));
+
+        merged.addAll(oldWords.subList(0, oldWordsPivots.getFirst() + 1));
+
+        for (int pv = 1; pv < pivots; pv++) {
+            float newWordsProb = 0;
+            int start = newWordsPivots.get(pv - 1) + 1;
+            int end = newWordsPivots.get(pv);
+            for (int i = start; i < end; ++i) {
+                newWordsProb += newWords.get(i).getProbability();
+            }
+            if (start != end) {
+                newWordsProb /= end - start;
+            }
+
+            float oldWordsProb = 0;
+            start = oldWordsPivots.get(pv - 1) + 1;
+            end = oldWordsPivots.get(pv);
+            for (int j = start; j < end; ++j) {
+                oldWordsProb += oldWords.get(j).getProbability();
+            }
+            if (start != end) {
+                oldWordsProb /= end - start;
+            }
+
+            if (newWordsProb > oldWordsProb) {
+                merged.addAll(newWords.subList(newWordsPivots.get(pv - 1) + 1, newWordsPivots.get(pv) + 1));
+            } else {
+                merged.addAll(oldWords.subList(oldWordsPivots.get(pv - 1) + 1, oldWordsPivots.get(pv) + 1));
+            }
+        }
+
+        merged.addAll(newWords.subList(newWordsPivots.getLast() + 1, newWords.size()));
+
+        return merged;
     }
 
 }

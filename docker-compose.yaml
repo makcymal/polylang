@@ -35,4 +35,3 @@ services:
 
 volumes:
   polylang_db:
-    driver: local

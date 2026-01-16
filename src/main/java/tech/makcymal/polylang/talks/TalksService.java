@@ -15,7 +15,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static tech.makcymal.polylang.common.CommonUtils.mkdir;
 
@@ -27,6 +29,7 @@ public class TalksService {
     private final TalksRepo repo;
     private final TalksProperties props;
     private final TranscriptionService transcriptionService;
+    private final Map<UUID, Integer> tasksCount = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -46,11 +49,22 @@ public class TalksService {
     }
 
     public void submitTranscriptionTask(UUID talkId, int chunkStart, InputStream chunkStream) {
+        tasksCount.merge(talkId, 1, Integer::sum);
         Task task = new Task(
                 talkId,
                 (float) chunkStart / 1000,
-                "%s/%s.%d.webm".formatted(props.getRecordsDir(), talkId.toString(), chunkStart),
-                "%s/%s.%d.json".formatted(props.getTranscriptionsDir(), talkId.toString(), chunkStart)
+                "%s/%s.%d.%d.webm".formatted(
+                        props.getRecordsDir(),
+                        talkId.toString(),
+                        tasksCount.get(talkId),
+                        chunkStart
+                ),
+                "%s/%s.%d.%d.json".formatted(
+                        props.getTranscriptionsDir(),
+                        talkId.toString(),
+                        tasksCount.get(talkId),
+                        chunkStart
+                )
         );
 
         try {

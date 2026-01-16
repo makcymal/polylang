@@ -38,7 +38,7 @@ public interface UsersRepo extends JpaRepository<UserEntity, UUID> {
 
     @Query(value = """
                    UPDATE users
-                   SET last_authentication_at = :dt
+                   SET last_authenticated_at = :dt
                    WHERE id = :id
                    """,
            nativeQuery = true)

@@ -14,14 +14,14 @@ const constraints: MediaStreamConstraints = {
 type RecordChunkConsumer = (chunk: Blob, start: number) => Promise<void>;
 
 export class SpeechRecorder {
-    private static readonly COLLECTING_CHUNKS_INTERVAL = 5000;
-    private static readonly PROCESSING_CHUNKS_INTERVAL = 6000;
+    private static readonly COLLECTING_CHUNKS_INTERVAL = 3000;
+    private static readonly PROCESSING_CHUNKS_INTERVAL = 4000;
     private static readonly JOINED_CHUNK_TARGET_DURATION = 12000;
     private static readonly BLOB_TYPE = {type: 'audio/webm;codecs=opus'};
 
     private recorder: MediaRecorder | null = null;
     private collectingIntervalDescriptor: number | null = null;
-    private timer: Timer = new Timer(100);
+    private timer: Timer = new Timer(10);
     private chunks: Blob[] = [];
     private chunkDurations: number[] = [];
     private totalChunksTime = 0;
@@ -93,7 +93,7 @@ export class SpeechRecorder {
                 this.recorder.start();
                 this.collectingIntervalDescriptor = setInterval(() => {
                     if (this.recorder) {
-                        this.recorder.stop();
+                            this.recorder.stop();
                         this.recorder.start();
                     }
                 }, SpeechRecorder.COLLECTING_CHUNKS_INTERVAL);
