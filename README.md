@@ -1,3 +1,32 @@
+### How to run locally
+
+1. Build Docker image with Whisper model:
+
+    ```
+    docker build -t whisper:py3.14-deb13 -f Dockerfile-whisper .
+    ```
+
+2. Build Docker image with backend:
+
+    ```
+    docker build -t polylang:jdk25-py3.14-deb13 -f Dockerfile-polylang .
+    ```
+   
+3. Run backend:
+
+    ```
+    docker run --name polylang --env-file .env polylang:jdk25-py3.14-deb13 
+    ```
+   
+4. Run frontend:
+    
+    ```
+    cd ui
+    yarn dev
+    ```
+   
+5. Open in browser at localhost:5173
+
 ### Whisper
 
 ```
@@ -33,7 +62,9 @@ whisper -o stt/transciption -f json --verbose False --lang en --fp16 False \
         --model_dir whisper-models --model small.en stt/speech/sample.wav
 ```
 
+```bash
 whisper -f json --verbose False --language en --fp16 False --word_timestamps True --model_dir whisper-models --model small.en
+```
 
 ### Images:
 
