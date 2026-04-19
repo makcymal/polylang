@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import tech.makcymal.polylang.api.TalksApi;
 import tech.makcymal.polylang.security.context.JwtAuthHolder;
 
 import java.io.InputStream;
@@ -19,28 +20,30 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/talks")
 @RequiredArgsConstructor
-public class TalksController {
+public class TalksController implements TalksApi {
 
     private final JwtAuthHolder authHolder;
     private final TalksService service;
 
+    @Override
+    @GetMapping("/transcription/{talkId}")
+    @ResponseStatus(HttpStatus.OK)
+    public String getTranscription(@PathVariable UUID talkId) {
+        return service.getTranscription(talkId);
+    }
+
+    @Override
     @PostMapping("/{textId}")
     @ResponseStatus(HttpStatus.CREATED)
     public UUID createNewTalk(@PathVariable UUID textId) {
         return service.createNewTalk(textId, authHolder.get().getUserId(), authHolder.get().getClientId());
     }
 
-    @PutMapping(value = "/record/{talkId}/{start}",
-                consumes = "audio/webm")
+    @Override
+    @PutMapping(value = "/record/{talkId}/{start}", consumes = "audio/webm")
     @ResponseStatus(HttpStatus.OK)
-    public void takeRecordChunkV2(@PathVariable UUID talkId, @PathVariable int start, InputStream chunkStream) {
+    public void takeRecordChunk(@PathVariable UUID talkId, @PathVariable int start, InputStream chunkStream) {
         service.submitTranscriptionTask(talkId, start, chunkStream);
-    }
-
-    @GetMapping("/transcription/{talkId}")
-    @ResponseStatus(HttpStatus.OK)
-    public String getTranscription(@PathVariable UUID talkId) {
-        return service.getTranscription(talkId);
     }
 
 }

@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import tech.makcymal.polylang.api.UsersApi;
 import tech.makcymal.polylang.common.exceptions.HttpException;
 import tech.makcymal.polylang.security.SecurityProperties;
 import tech.makcymal.polylang.security.exceptions.AuthException;
 import tech.makcymal.polylang.users.dto.CheckIfExistsResponse;
-import tech.makcymal.polylang.users.dto.ConfirmEmailResponse;
+import tech.makcymal.polylang.users.dto.EmailConfirmationResponse;
 import tech.makcymal.polylang.users.dto.LoginRequest;
 import tech.makcymal.polylang.users.dto.Session;
 import tech.makcymal.polylang.users.email_confirmation.EmailConfirmationRequest;
@@ -33,7 +34,7 @@ import static tech.makcymal.polylang.common.CommonUtils.objToBase64Json;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-public class UsersController {
+public class UsersController implements UsersApi {
 
     private static final String EMAIL_CONFIRMATION_CODE_ID_COOKIE = "ecc-id";
     private static final String CURRENT_USER_COOKIE = "current-user";
@@ -44,6 +45,7 @@ public class UsersController {
     private final SecurityProperties securityProps;
     private final UsersService service;
 
+    @Override
     @GetMapping("/check-if-exists/{emailOrUsername}")
     @ResponseStatus(HttpStatus.OK)
     public CheckIfExistsResponse checkIfExists(@PathVariable String emailOrUsername) {
@@ -52,6 +54,7 @@ public class UsersController {
 
     // success -> set current-user, ecc-id & delete access-jwt, refresh-token, logout-jti
     // fail -> delete all
+    @Override
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequest registerRequest) {
         HttpHeaders headers = new HttpHeaders();
@@ -80,12 +83,13 @@ public class UsersController {
 
     // success (confirmed) -> set current-user, access-jwt, refresh-jti, logout-jti & delete ecc-id
     // success (unconfirmed) | fail -> set current-user, ecc-id & delete access-jwt, refresh-jti, logout-jti
+    @Override
     @PutMapping("/confirm")
-    public ResponseEntity<ConfirmEmailResponse> confirmEmail(
+    public ResponseEntity<EmailConfirmationResponse> confirmEmail(
             @RequestBody EmailConfirmationRequest request,
             @CookieValue(name = EMAIL_CONFIRMATION_CODE_ID_COOKIE, required = false) UUID emailConfirmationCodeId
     ) {
-        ConfirmEmailResponse dto = new ConfirmEmailResponse(request.getEmail(), false);
+        EmailConfirmationResponse dto = new EmailConfirmationResponse(request.getEmail(), false);
         HttpHeaders headers = new HttpHeaders();
         HttpStatus status = HttpStatus.UNAUTHORIZED;
 

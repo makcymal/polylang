@@ -27,7 +27,9 @@ import tech.makcymal.polylang.security.filter_chain.JwtFilter;
 public class SecurityConfig {
 
     private final String[] permittedUris = new String[]{
-            "/error"
+            "/error",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
     };
 
     private final ClientIdFilter clientIdFilter;
@@ -41,12 +43,12 @@ public class SecurityConfig {
                 })
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterAfter(clientIdFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(antiFraudFilter, ClientIdFilter.class)
-                .addFilterAfter(jwtFilter, AntiFraudFilter.class)
                 .authorizeHttpRequests(c -> c
                         .requestMatchers(permittedUris).permitAll()
                         .anyRequest().authenticated())
+                .addFilterAfter(clientIdFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(antiFraudFilter, ClientIdFilter.class)
+                .addFilterAfter(jwtFilter, AntiFraudFilter.class)
                 .exceptionHandling(c -> c
                         .authenticationEntryPoint(exceptionalEntryPoint))
                 .build();

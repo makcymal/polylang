@@ -28,6 +28,9 @@ import java.util.UUID;
 public class JwtFilter extends OncePerRequestFilter {
 
     private static final RequestMatcher permitMatcher = RequestMatchers.anyOf(
+            PathPatternRequestMatcher.pathPattern("/error"),
+            PathPatternRequestMatcher.pathPattern("/swagger-ui/**"),
+            PathPatternRequestMatcher.pathPattern("/v3/api-docs/**"),
             PathPatternRequestMatcher.pathPattern("/users/**"),
             PathPatternRequestMatcher.pathPattern("/texts/random")
     );

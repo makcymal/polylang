@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ConfirmEmailResponse {
+public class EmailConfirmationResponse {
 
     private String email;
     private boolean confirmed;

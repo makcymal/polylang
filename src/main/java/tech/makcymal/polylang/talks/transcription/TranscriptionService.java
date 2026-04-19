@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.makcymal.polylang.common.NamingThreadFactory;
 import tech.makcymal.polylang.common.CommonUtils;
-import tech.makcymal.polylang.common.StringView;
 import tech.makcymal.polylang.talks.TalksProperties;
 import tech.makcymal.polylang.talks.TalksRepo;
 
@@ -187,13 +186,13 @@ public class TranscriptionService {
             return;
         }
 
-        List<Word> mergedWords = mergeOldWordsWithNewWords(oldWords, newWords);
+        List<Word> mergedWords = mergeOldAndNewWords(oldWords, newWords);
         log.info("\n{}\n+\n{}\n=\n{}", oldWords, newWords, mergedWords);
 
         transcribedWords.put(talkId, mergedWords);
     }
 
-    private List<Word> mergeOldWordsWithNewWords(List<Word> oldWords, List<Word> newWords) {
+    private List<Word> mergeOldAndNewWords(List<Word> oldWords, List<Word> newWords) {
         // common subsequence length
         int[][] csl = new int[newWords.size() + 1][oldWords.size() + 1];
         int pivots = 0;
@@ -214,7 +213,7 @@ public class TranscriptionService {
         }
 
         if (pivots == 0) {
-            return new ArrayList<>(newWords);
+            return mergeOldAndNewWordsWithoutPivots(oldWords, newWords);
         }
 
         List<Word> merged = new ArrayList<>(Math.min(newWords.size(), oldWords.size()));
@@ -250,6 +249,21 @@ public class TranscriptionService {
         }
 
         merged.addAll(newWords.subList(newWordsPivots.getLast() + 1, newWords.size()));
+
+        return merged;
+    }
+
+    private List<Word> mergeOldAndNewWordsWithoutPivots(List<Word> oldWords, List<Word> newWords) {
+        int newWordsStart = findFirst(newWords, w -> w.getProbability() > 0.7f);
+        if (newWordsStart == -1 || newWordsStart == newWords.size()) {
+            return oldWords;
+        }
+
+        int oldWordsEnd = findFirst(oldWords, w -> newWords.get(newWordsStart).getStart() < w.getEnd());
+
+        List<Word> merged = new ArrayList<>(oldWordsEnd + newWords.size() - newWordsStart);
+        merged.addAll(oldWords.subList(0, oldWordsEnd));
+        merged.addAll(newWords.subList(newWordsStart, newWords.size()));
 
         return merged;
     }
