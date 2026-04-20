@@ -42,11 +42,11 @@ export const Gym = ({theme}: Props) => {
     const recorder = useRef(new SpeechRecorder(processRecordChunk));
     const [isRecording, setIsRecording] = useState(false);
 
-    const timerDescriptor = useRef<number | null>(null);
+    const timerInterval = useRef<number | null>(null);
     const timerSeconds = useRef(0);
     const [timerFormatted, setTimerFormatted] = useState('00:00');
 
-    const transcribeDescriptor = useRef<number | null>(null);
+    const transcribeInterval = useRef<number | null>(null);
     const [transcribedRecord, setTranscribedRecord] = useState('');
     const [translationAnalysis, setTranslationAnalysis] = useState('');
 
@@ -57,20 +57,20 @@ export const Gym = ({theme}: Props) => {
         setIsRecording(_is_recording);
 
         if (_is_recording) {
-            timerDescriptor.current = setInterval(() => {
+            timerInterval.current = setInterval(() => {
                 timerSeconds.current += 1;
                 setTimerFormatted(getTimerFormatted());
             }, 1000);
-            transcribeDescriptor.current ??= setInterval(async () => {
+            transcribeInterval.current ??= setInterval(async () => {
                 if (talkId.current) {
                     const transcription = await getTalkTranscription(talkId.current);
                     setTranscribedRecord(transcription);
                 }
             }, 2000);
         } else {
-            if (timerDescriptor.current) {
-                clearInterval(timerDescriptor.current);
-                timerDescriptor.current = null;
+            if (timerInterval.current) {
+                clearInterval(timerInterval.current);
+                timerInterval.current = null;
             }
         }
     };

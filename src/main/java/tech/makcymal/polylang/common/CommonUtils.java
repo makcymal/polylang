@@ -25,6 +25,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
+
 public class CommonUtils {
 
     private static final Logger log = LoggerFactory.getLogger(CommonUtils.class);
@@ -83,6 +86,7 @@ public class CommonUtils {
                 log.error(e.getMessage(), e);
                 throw e;
             }
+
         } catch (IOException | InterruptedException e) {
             RuntimeException e1 = new ProcessException(cmd, stdout, e);
             log.error(e1.getMessage(), e1);
@@ -91,7 +95,7 @@ public class CommonUtils {
     }
 
     public static String readStdout(@NonNull Process process, @NonNull List<String> cmd) {
-        StringBuffer stdoutBuilder = new StringBuffer();
+        StringBuilder stdoutBuilder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -116,7 +120,7 @@ public class CommonUtils {
     }
 
     public static <T> int findFirst(List<T> list, Predicate<T> predicate) {
-        if (CollectionUtils.isEmpty(list)) {
+        if (isEmpty(list)) {
             return -1;
         }
         for (int i = 0; i < list.size(); ++i) {
@@ -132,7 +136,7 @@ public class CommonUtils {
     }
 
     public static int findNext(String str, Predicate<Character> predicate, int after) {
-        if (!StringUtils.hasText(str)) {
+        if (!hasText(str)) {
             return -1;
         }
         for (int i = after + 1; i < str.length(); ++i) {

@@ -20,14 +20,14 @@ export class SpeechRecorder {
     private static readonly BLOB_TYPE = {type: 'audio/webm;codecs=opus'};
 
     private recorder: MediaRecorder | null = null;
-    private collectingIntervalDescriptor: number | null = null;
+    private collectingInterval: number | null = null;
     private timer: Timer = new Timer(10);
     private chunks: Blob[] = [];
     private chunkDurations: number[] = [];
     private totalChunksTime = 0;
     private nChunks = 0;
     private processedChunks = 0;
-    private processingIntervalDescriptor: number | null = null;
+    private processingInterval: number | null = null;
     private readonly processRecordChunk: RecordChunkConsumer;
 
     constructor(sendChunk: RecordChunkConsumer) {
@@ -88,34 +88,31 @@ export class SpeechRecorder {
 
     toggle(): boolean {
         if (this.recorder) {
-            console.log('recorder state before toggling: ', this.recorder.state);
             if (this.recorder.state == 'inactive') {
                 this.recorder.start();
-                this.collectingIntervalDescriptor = setInterval(() => {
+                this.collectingInterval = setInterval(() => {
                     if (this.recorder) {
-                            this.recorder.stop();
+                        this.recorder.stop();
                         this.recorder.start();
                     }
                 }, SpeechRecorder.COLLECTING_CHUNKS_INTERVAL);
 
                 this.timer.resume();
 
-                this.processingIntervalDescriptor ??= setInterval(() => {
+                this.processingInterval ??= setInterval(() => {
                     void this.processChunks();
                 }, SpeechRecorder.PROCESSING_CHUNKS_INTERVAL);
 
-                console.log('recorder state after toggling: ', this.recorder.state);
                 return true;
 
             } else if (this.recorder.state == 'recording') {
                 this.recorder.stop();
-                if (this.collectingIntervalDescriptor) {
-                    clearInterval(this.collectingIntervalDescriptor);
+                if (this.collectingInterval) {
+                    clearInterval(this.collectingInterval);
                 }
 
                 this.timer.pause();
 
-                console.log('recorder state after toggling: ', this.recorder.state);
                 return false;
             }
         }

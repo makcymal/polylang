@@ -11,7 +11,7 @@ spring:
     name: polylang
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5454}/${POSTGRES_DB}
+    url: ${POSTGRES_URL}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   jpa:

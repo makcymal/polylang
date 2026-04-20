@@ -26,6 +26,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static tech.makcymal.polylang.common.CommonUtils.executeCommand;
+import static tech.makcymal.polylang.common.CommonUtils.readJsonFile;
 import static tech.makcymal.polylang.talks.transcription.WhisperOutput.Word;
 import static tech.makcymal.polylang.common.CommonUtils.findFirst;
 
@@ -39,9 +41,9 @@ public class TranscriptionService {
 
     // transcribing stage
     ScheduledExecutorService transcribingExecutor;
+    private List<String> rawTranscribeCmd;
     private List<Task> transcribeTasks = new ArrayList<>();
     private final Lock transcribeTasksLock = new ReentrantLock();
-    private List<String> rawTranscribeCmd;
 
     // processing stage
     ExecutorService processingExecutor;
@@ -98,7 +100,7 @@ public class TranscriptionService {
         });
 
         try {
-            CommonUtils.executeCommand(cmd);
+            executeCommand(cmd);
         } catch (RuntimeException e) {
             log.error("err - executing whisper", e);
             tasks.forEach(task -> task.setTranscribingError(e));
@@ -146,7 +148,7 @@ public class TranscriptionService {
     }
 
     void processTranscription(Task task) {
-        WhisperOutput output = CommonUtils.readJsonFile(task.getFileToProcess(), WhisperOutput.class);
+        WhisperOutput output = readJsonFile(task.getFileToProcess(), WhisperOutput.class);
         List<Word> words = output.getSegments().stream()
                 .map(WhisperOutput.Segment::getWords)
                 .flatMap(List::stream)
@@ -253,6 +255,7 @@ public class TranscriptionService {
         return merged;
     }
 
+    // fixme: subListRangeCheck => fromIndex(0) > toIndex(-1)
     private List<Word> mergeOldAndNewWordsWithoutPivots(List<Word> oldWords, List<Word> newWords) {
         int newWordsStart = findFirst(newWords, w -> w.getProbability() > 0.7f);
         if (newWordsStart == -1 || newWordsStart == newWords.size()) {
