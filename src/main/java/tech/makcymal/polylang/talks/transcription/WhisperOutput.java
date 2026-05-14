@@ -65,26 +65,40 @@ public class WhisperOutput {
             return "[%s][%.2f:%.2f~%.2f]".formatted(word, start, end, probability);
         }
 
-        public boolean equalsWithProb(Word o, float probThreshold) {
+        public boolean equalsWithProb(Word o, float probThreshold, float matchThreshold) {
             if (end <= o.start || start >= o.end) {
                 return false;
             }
-            if (probability <= probThreshold || o.probability <= probThreshold) {
+            if (probability + o.probability < probThreshold) {
                 return false;
             }
 
             int i = findFirst(word, ALPHA_NUMERIC_FILTER);
             int j = findFirst(o.word, ALPHA_NUMERIC_FILTER);
+            int matching = 0;
+            int notMatching = 0;
 
             while (0 <= i && i < word.length() && 0 <= j && j < o.word.length()) {
-                if (Character.toLowerCase(word.charAt(i)) != Character.toLowerCase(o.word.charAt(j))) {
-                    return false;
+                if (Character.toLowerCase(word.charAt(i)) == Character.toLowerCase(o.word.charAt(j))) {
+                    matching++;
+                } else {
+                    notMatching++;
                 }
                 i = findNext(word, ALPHA_NUMERIC_FILTER, i);
                 j = findNext(o.word, ALPHA_NUMERIC_FILTER, j);
             }
 
-            return i == -1 && j == -1;
+            while (0 <= i && i < word.length()) {
+                notMatching++;
+                i = findNext(word, ALPHA_NUMERIC_FILTER, i);
+            }
+
+            while (0 <= j && j < o.word.length()) {
+                notMatching++;
+                j = findNext(o.word, ALPHA_NUMERIC_FILTER, j);
+            }
+
+            return (float) notMatching / (matching + notMatching) <= matchThreshold;
         }
     }
 

@@ -4,7 +4,7 @@ const BASE_URL = 'localhost:3232/';
 
 const axiosConfig: AxiosRequestConfig = {
     baseURL: 'http://' + BASE_URL,
-    timeout: 10000,
+    timeout: 100000,
     headers: {
         'Content-Type': 'application/json'
     },

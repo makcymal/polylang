@@ -21,8 +21,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -154,6 +157,17 @@ public class CommonUtils {
             log.error("err - sleep interrupted", e);
             Thread.currentThread().interrupt();
         }
+    }
+
+    public static <T> List<T> mutableListOf(T... elements) {
+        return new ArrayList<>(Arrays.asList(elements));
+    }
+
+    public static <S, T> T mapNullable(S source, Function<S, T> mapper) {
+        if (source == null) {
+            return null;
+        }
+        return mapper.apply(source);
     }
 
 }

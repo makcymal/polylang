@@ -12,9 +12,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import tech.makcymal.polylang.api.TalksApi;
 import tech.makcymal.polylang.security.context.JwtAuthHolder;
+import tech.makcymal.polylang.talks.transcription.WhisperOutput;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
+
+import static java.lang.Double.parseDouble;
+import static java.lang.Math.round;
 
 @Slf4j
 @RestController
@@ -40,10 +45,17 @@ public class TalksController implements TalksApi {
     }
 
     @Override
-    @PutMapping(value = "/record/{talkId}/{start}", consumes = "audio/webm")
+    @PutMapping(value = "/record/{talkId}/{startStr}", consumes = "audio/webm")
     @ResponseStatus(HttpStatus.OK)
-    public void takeRecordChunk(@PathVariable UUID talkId, @PathVariable int start, InputStream chunkStream) {
+    public void takeRecordChunk(@PathVariable UUID talkId, @PathVariable String startStr, InputStream chunkStream) {
+        int start = (int) round(parseDouble(startStr));
         service.submitTranscriptionTask(talkId, start, chunkStream);
+    }
+
+    @GetMapping("/analyze/{talkId}")
+    @ResponseStatus(HttpStatus.OK)
+    public String analyze(@PathVariable UUID talkId) {
+        return service.analyze(talkId);
     }
 
 }

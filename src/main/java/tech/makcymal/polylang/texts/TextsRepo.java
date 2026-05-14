@@ -18,6 +18,16 @@ public interface TextsRepo extends JpaRepository<TextEntity, UUID> {
             """,
            nativeQuery = true
     )
-    TextEntity getRandom();
+    TextEntity findRandom();
+
+    @Query(value =
+            """
+            SELECT *
+            FROM texts
+            WHERE id = (SELECT text_id FROM talks WHERE id = :talkId)
+            """,
+           nativeQuery = true
+    )
+    TextEntity findByTalkId(UUID talkId);
 
 }

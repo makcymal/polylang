@@ -1,10 +1,10 @@
 import {useEffect, useRef, useState} from 'react';
 import {LIGHT, type Theme} from '@/types/Theme.ts';
-import {SpeechRecorder} from '@/utils/SpeechRecorder.ts';
+import {SpeechRecorder} from '@/utils/SpeechRecorder2.ts';
 import {getRandomText} from '@/api/TextsService.ts';
 import TextPanel from '@/components/TextPanel.tsx';
 import '@/widgets/Gym.css';
-import {getNewTalkId, getTalkTranscription, appendRecordChunk} from "@/api/TalksService.ts";
+import {getNewTalkId, getTalkTranscription, appendRecordChunk, analyzeTalk} from "@/api/TalksService.ts";
 import type {Text} from "@/types/Text.ts"
 import {useTranslation} from "react-i18next";
 
@@ -95,8 +95,11 @@ export const Gym = ({theme}: Props) => {
         textId.current = textToTranslate.id
     }, [textToTranslate]);
 
-    const analyzeTranslation = () => {
-        setTranslationAnalysis('Пока это заглушка. После отправки перевода здесь появится анализ и подсказки');
+    const analyzeTranslation = async () => {
+        if (talkId.current) {
+            const analysis = await analyzeTalk(talkId.current);
+            setTranslationAnalysis(analysis);
+        }
     };
 
     return (

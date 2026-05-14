@@ -75,6 +75,6 @@ public interface TalksApi {
                          description = "Сервер недоступен",
                          content = @Content(schema = @Schema(hidden = true)))
     })
-    void takeRecordChunk(UUID talkId, int start, InputStream chunkStream);
+    void takeRecordChunk(UUID talkId, String start, InputStream chunkStream);
 
 }

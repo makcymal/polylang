@@ -163,18 +163,16 @@ public class TranscriptionService {
                 .map(Word::getWord)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(" "))
-                // remove spaces at the beginning
-                .replace("^\\s*", "")
-                // remove spaces at the end
-                .replace("\\s*$", "")
+                .stripLeading()
+                .stripTrailing()
                 // remove spaces before dots
-                .replace("\\s*\\.", ".")
+                .replaceAll(" +\\.", ".")
                 // remove spaces before commas
-                .replace("\\s*\\,", ",")
+                .replaceAll(" +,", ",")
                 // remove newlines
-                .replace("\n", " ")
+                .replaceAll("\\R", " ")
                 // reduce consecutive spaces to one
-                .replace("\\s*", " ");
+                .replaceAll(" +", " ");
 
         repo.setTranscription(task.getTalkId(), transcribedText);
     }
@@ -203,7 +201,7 @@ public class TranscriptionService {
 
         for (int i = 0; i < newWords.size(); i++) {
             for (int j = 0; j < oldWords.size(); j++) {
-                if (newWords.get(i).equalsWithProb(oldWords.get(j), 0.5f)) {
+                if (newWords.get(i).equalsWithProb(oldWords.get(j), 0.5f, 0.1f)) {
                     csl[i + 1][j + 1] = csl[i][j] + 1;
                     pivots++;
                     newWordsPivots.add(i);
@@ -263,6 +261,9 @@ public class TranscriptionService {
         }
 
         int oldWordsEnd = findFirst(oldWords, w -> newWords.get(newWordsStart).getStart() < w.getEnd());
+        if (oldWordsEnd == -1) {
+            oldWordsEnd = oldWords.size();
+        }
 
         List<Word> merged = new ArrayList<>(oldWordsEnd + newWords.size() - newWordsStart);
         merged.addAll(oldWords.subList(0, oldWordsEnd));

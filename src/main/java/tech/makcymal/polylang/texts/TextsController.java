@@ -14,13 +14,11 @@ import tech.makcymal.polylang.api.TextsApi;
 public class TextsController implements TextsApi {
 
     private final TextsService service;
-    private final TextsMapper mapper;
 
     @Override
     @GetMapping("/random")
     public TextDto getRandomText() {
-        TextEntity text = service.getRandomText();
-        return mapper.toDto(text);
+        return service.getRandomText();
     }
 
 }

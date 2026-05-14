@@ -8,6 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
 
 @Slf4j
 @Configuration
@@ -26,6 +31,17 @@ public class AppConfig {
     @Primary
     public JsonMapper jsonMapper() {
         return jsonMapper;
+    }
+
+    @Bean
+    @Primary
+    public RestTemplate restTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(30));
+        factory.setReadTimeout(Duration.ofSeconds(60));
+
+        RestTemplate restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(factory));
+        return restTemplate;
     }
 
 }

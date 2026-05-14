@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import tech.makcymal.polylang.common.exceptions.HttpException;
+import tech.makcymal.polylang.talks.analysis.AnalysisService;
 import tech.makcymal.polylang.talks.transcription.Task;
 import tech.makcymal.polylang.talks.transcription.TranscriptionService;
+import tech.makcymal.polylang.texts.TextsService;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -28,7 +30,9 @@ public class TalksService {
 
     private final TalksRepo repo;
     private final TalksProperties props;
+    private final TextsService textsService;
     private final TranscriptionService transcriptionService;
+    private final AnalysisService analysisService;
     private final Map<UUID, Integer> tasksCount = new ConcurrentHashMap<>();
 
     @PostConstruct
@@ -84,6 +88,12 @@ public class TalksService {
         return repo.findById(talkId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "talk with given id not found"))
                 .getTranscription();
+    }
+
+    public String analyze(UUID talkId) {
+        String original = textsService.getTextContentByTalkId(talkId);
+        String transcription = getTranscription(talkId);
+        return analysisService.analyze(original, transcription);
     }
 
     @Scheduled(fixedRateString = "${talks.cleanup-rate}")
